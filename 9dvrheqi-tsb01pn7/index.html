@@ -134,7 +134,9 @@ section{padding:clamp(76px,15vh,190px) 0;border-top:1px solid var(--hair)}
 .inv .snum{-webkit-text-stroke-color:rgba(240,240,240,.30)}
 
 /* ── Invertierte Sektion ── */
-.inv{background:var(--ink);color:var(--paper);border-top:0}
+.inv{background:var(--ink);color:var(--paper);border-top:0;
+  padding-block:clamp(72px,14vh,180px)}
+.inv > .wrap{padding-inline:clamp(28px,4vw,56px)}
 .inv h2,.inv .p-title{color:var(--paper)}
 .inv p{color:rgba(240,240,240,.66)}
 .inv .eyebrow{color:rgba(240,240,240,.45)}
@@ -252,7 +254,10 @@ footer a{color:var(--ink-70)}
   <div class="zahlen rv" id="zahlen" style="transition-delay:.18s"></div>
 </header>
 
+</div><!-- /wrap -->
+
 <section id="ensemble" class="inv">
+ <div class="wrap">
   <div class="sec-head">
     <div><span class="snum rv">01</span><div class="eyebrow rv">Das Ensemble</div>
       <h2 class="rv">Die Karte</h2></div>
@@ -269,8 +274,10 @@ footer a{color:var(--ink-70)}
       <aside id="panel"></aside>
     </div>
   </div>
+ </div>
 </section>
 
+<div class="wrap">
 <section id="mensch">
   <div class="sec-head">
     <div><span class="snum rv">02</span><div class="eyebrow rv">Human in the loop</div>
