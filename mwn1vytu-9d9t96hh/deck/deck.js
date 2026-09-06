@@ -227,11 +227,46 @@
   /* ---------------------------------------------------------------
      Vollbild
      --------------------------------------------------------------- */
+  /* Beide Schalter in EINER Leiste unten links.
+
+     Bis zum 06.09.2026 stand der Vollbild-Knopf allein und frei im
+     Fenster. Das ging so lange gut, wie um die Bühne herum ein
+     schwarzer Rand lag - der Knopf ist hell und rechnete mit dunklem
+     Grund. Bei einem 16:9-Fenster gibt es diesen Rand nicht: Die
+     Bühne füllt alles, der Knopf liegt auf der Folie, und auf einer
+     Paper-Folie steht dann rgba(240,240,240,0.5) auf rgb(240,240,240).
+     Gleiche Farbe, unsichtbarer Knopf. Simon hat ihn gesucht.
+     Die Farben stehen jetzt in `deck.css` und tragen auf beidem.
+
+     Der zweite Schalter ist Simons Wunsch vom selben Tag: der Hinweis
+     auf die Taste O. Er ist ein KNOPF und kein blosser Text, weil das
+     Deck auch auf einem Telefon geöffnet wird - dort gibt es keine
+     Taste O, und die Folienübersicht wäre sonst unerreichbar.
+     VERBOT: keine dritte Schaltfläche. Zwei sind Bedienung, drei sind
+     eine Werkzeugleiste, und das Deck ist kein Programm. */
+  var leiste = document.createElement('div');
+  leiste.className = 'ctrl';
+
   var fsBtn = document.createElement('button');
   fsBtn.className = 'fsbtn';
   fsBtn.type = 'button';
   fsBtn.textContent = 'VOLLBILD';
-  document.body.appendChild(fsBtn);
+  leiste.appendChild(fsBtn);
+
+  var ovBtn = document.createElement('button');
+  ovBtn.className = 'fsbtn ovbtn';
+  ovBtn.type = 'button';
+  ovBtn.setAttribute('aria-label', 'Folienübersicht öffnen, Taste O');
+  ovBtn.innerHTML = '<span class="k">O</span> ÜBERSICHT';
+  ovBtn.addEventListener('click', function (e) {
+    e.preventDefault();
+    ov.classList.toggle('on');
+    markOverview();
+    ovBtn.blur();
+  });
+  leiste.appendChild(ovBtn);
+
+  document.body.appendChild(leiste);
 
   function inFullscreen() {
     return !!(document.fullscreenElement || document.webkitFullscreenElement);
@@ -268,6 +303,7 @@
      Esc auf jedem System funktioniert. */
   function syncFsBtn() {
     fsBtn.hidden = inFullscreen();
+    ovBtn.hidden = inFullscreen();
     fit();
   }
   document.addEventListener('fullscreenchange', syncFsBtn);

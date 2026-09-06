@@ -128,23 +128,50 @@ body { background: var(--ink); }
 /* Vollbild-Schalter. Sitzt ausserhalb der Bühne, damit er im Export
    nicht mitgedruckt wird und die Folie nicht anfasst. Taste F tut
    dasselbe - der Knopf ist für alle, die das nicht wissen. */
-.fsbtn {
+/* Die Bedienleiste unten links: Vollbild und Folienübersicht.
+
+   Sie hat einen EIGENEN GRUND, und das ist der Kern der Sache. Bis zum
+   06.09.2026 war der Knopf durchsichtig und hell - gerechnet auf den
+   schwarzen Rand um die Bühne. Diesen Rand gibt es aber nur, wenn das
+   Fenster nicht 16:9 ist. Bei 1280x720 füllt die Bühne alles, der Knopf
+   liegt auf der Folie, und auf einer Paper-Folie stand dann
+   rgba(240,240,240,0.5) auf rgb(240,240,240): dieselbe Farbe. Der Knopf
+   war nicht schwer zu sehen, er war weg.
+   Der dunkle Grund trägt auf beidem - auf dem schwarzen Rand fällt er
+   nicht auf, auf einer hellen Folie hebt er sich ab.
+   VERBOT: kein transparenter Hintergrund mehr. Was ausserhalb der Bühne
+   sitzt, weiss nie, worauf es landet. */
+.ctrl {
   position: fixed; z-index: 60; left: 24px; bottom: 20px;
-  appearance: none; background: transparent; cursor: pointer;
-  border: 1px solid rgba(240,240,240,0.25); border-radius: var(--radius-pill);
+  display: flex; align-items: center; gap: 10px;
+}
+.fsbtn {
+  appearance: none; cursor: pointer;
+  background: rgba(15,15,15,0.62);
+  border: 1px solid rgba(240,240,240,0.30); border-radius: var(--radius-pill);
   padding: 7px 16px 8px;
   font-family: var(--font-mono); font-weight: 500; font-size: 11px;
   letter-spacing: var(--tracking-eyebrow);
-  color: rgba(240,240,240,0.5);
+  color: rgba(240,240,240,0.72);
   transition: color var(--dur-base) var(--ease-out),
-              border-color var(--dur-base) var(--ease-out);
+              border-color var(--dur-base) var(--ease-out),
+              background-color var(--dur-base) var(--ease-out);
+}
+/* Die Taste im Knopf. Sie steht drin, weil das Deck auch gelesen wird,
+   ohne dass jemand die Tastenkürzel kennt - und der Knopf funktioniert
+   auf dem Telefon, wo es kein O gibt. */
+.ovbtn .k {
+  display: inline-block; min-width: 14px; margin-right: 7px;
+  padding: 1px 3px 0;
+  border: 1px solid currentColor; border-radius: 3px;
+  text-align: center; font-size: 10px; line-height: 1.25; opacity: 0.9;
 }
 /* Im Vollbild ist der Knopf weg - Esc bringt einen raus, und auf der
    Folie soll nichts stehen, was nicht zur Folie gehört. Die Regel ist
    ausdrücklich hier und nicht dem `[hidden]` des Browsers überlassen:
    ein `display` in einer Autorenregel würde es sonst überstimmen. */
 .fsbtn[hidden] { display: none; }
-.fsbtn:hover { color: var(--paper); border-color: rgba(240,240,240,0.6); }
+.fsbtn:hover { color: var(--paper); border-color: rgba(240,240,240,0.6); background: rgba(15,15,15,0.82); }
 .fsbtn:focus-visible { outline: 2px solid var(--lime); outline-offset: 3px; }
 
 /* ---- Cornermark ------------------------------------------------
@@ -1950,7 +1977,7 @@ body { background: var(--ink); }
     page-break-after: always; break-inside: avoid;
   }
   [data-r] { opacity: 1 !important; transform: none !important; }
-  .hud, .counter, .hint, .fsbtn { display: none; }
+  .hud, .counter, .hint, .fsbtn, .ctrl { display: none; }
   .t-full .bg { transform: none; }
   .t-full .content { position: absolute; }
 }
