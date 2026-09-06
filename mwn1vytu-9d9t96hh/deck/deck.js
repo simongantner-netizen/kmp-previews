@@ -169,6 +169,18 @@
     } else {
       stage.style.transform = 'scale(' + s + ')';
     }
+    /* Kleine Schirme bekommen grössere Kleinschrift - die Regeln
+       stehen in `deck.css` unter [data-klein].
+
+       Der Schalter hängt am MASSSTAB, nicht an der Fensterbreite.
+       Eine Breitenabfrage träfe das Falsche: 900x900 skaliert auf
+       0.47 und braucht die Anhebung, 1400x300 skaliert auf 0.28 und
+       bräuchte sie dringender - die Breite sagt darüber nichts.
+       Gemessen am 06.09.2026: Ein iPhone im Querformat (844x390)
+       skaliert auf 0.361, eine Quellenangabe mit 14px landet damit
+       bei 5.1px auf dem Schirm. Ab etwa 0.55 ist die Grenze, darunter
+       wird die kleinste Stufe unlesbar. */
+    document.documentElement.dataset.klein = s < 0.55 ? '1' : '';
   }
 
   /* ---------------------------------------------------------------
@@ -242,8 +254,14 @@
      auf die Taste O. Er ist ein KNOPF und kein blosser Text, weil das
      Deck auch auf einem Telefon geöffnet wird - dort gibt es keine
      Taste O, und die Folienübersicht wäre sonst unerreichbar.
+     Dazu ein dritter Eintrag, der KEIN Knopf ist: der Hinweis aufs
+     Blättern (Simon, 06.09.2026). Er braucht keiner zu sein, weil ein
+     Tippen auf die Folie längst blättert - rechts vor, links zurück.
+     Das steht nur nirgends, und niemand probiert es aus.
      VERBOT: keine dritte Schaltfläche. Zwei sind Bedienung, drei sind
-     eine Werkzeugleiste, und das Deck ist kein Programm. */
+     eine Werkzeugleiste, und das Deck ist kein Programm. Ein Hinweis
+     ohne Klickfläche zählt nicht dazu - er nimmt keine Entscheidung
+     ab, er erklärt eine. */
   var leiste = document.createElement('div');
   leiste.className = 'ctrl';
 
@@ -266,7 +284,34 @@
   });
   leiste.appendChild(ovBtn);
 
+  var blaettern = document.createElement('span');
+  blaettern.className = 'ctrl-hint';
+  blaettern.innerHTML = '<span class="k">\u2190</span><span class="k">\u2192</span> BL\u00c4TTERN';
+  leiste.appendChild(blaettern);
+
   document.body.appendChild(leiste);
+
+  /* Die Leiste blendet sich aus, wie es früher der Hinweis unten
+     mittig tat - und aus einem handfesten Grund: Sie sitzt AUSSERHALB
+     der Bühne und wird deshalb nicht mitskaliert. Auf einem grossen
+     Schirm liegt sie im schwarzen Rand und stört niemanden. Ist das
+     Fenster 16:9, gibt es keinen Rand, und dann liegt eine 32px hohe
+     Leiste auf einer Folie, deren eigener Rand auf 26px geschrumpft
+     ist. Sie deckt den Fliesstext zu.
+     Jede Eingabe holt sie zurück - wer sie sucht, bewegt die Maus
+     oder tippt, und beides tut man ohnehin.
+     VERBOT: nicht dauerhaft einblenden. Was ausserhalb der Bühne
+     liegt und nicht mitskaliert, gehört nicht dauerhaft ins Bild. */
+  var wegTimer;
+  function leisteZeigen() {
+    leiste.classList.remove('weg');
+    clearTimeout(wegTimer);
+    wegTimer = setTimeout(function () { leiste.classList.add('weg'); }, 6000);
+  }
+  ['pointermove', 'pointerdown', 'keydown'].forEach(function (ev) {
+    addEventListener(ev, leisteZeigen, { passive: true });
+  });
+  leisteZeigen();
 
   function inFullscreen() {
     return !!(document.fullscreenElement || document.webkitFullscreenElement);
@@ -304,6 +349,7 @@
   function syncFsBtn() {
     fsBtn.hidden = inFullscreen();
     ovBtn.hidden = inFullscreen();
+    blaettern.hidden = inFullscreen();
     fit();
   }
   document.addEventListener('fullscreenchange', syncFsBtn);

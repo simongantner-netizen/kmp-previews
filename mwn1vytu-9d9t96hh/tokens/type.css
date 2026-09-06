@@ -4,7 +4,29 @@
    style-Attribut schreibt, umgeht das System.
    ========================================================= */
 
-html { background: var(--paper); color: var(--ink); }
+/* ⚠️ DIE WICHTIGSTE ZEILE FÜR DAS HANDY.
+
+   iOS Safari vergrössert Schriften in schmalen Layouts von sich aus
+   («Text Autosizing»). Der Faktor hängt an der Breite des einzelnen
+   Textblocks, nicht am Dokument - verschiedene Blöcke wachsen also
+   verschieden stark. Bei einer 1920er Bühne, die auf ein Telefon
+   heruntergerechnet wird, ist das verheerend: Am 06.09.2026 haben
+   sich auf der Folie «Breiter» drei Textblöcke übereinandergeschoben,
+   auf «Track Record» und «Wer am Tisch sitzt» wurde unten mitten im
+   Satz abgeschnitten, und auf «Wie wir arbeiten» war die Überzeile
+   oben angeschnitten. Dazu sahen einzelne Stellen nach einer anderen
+   Schrift aus - aufgeblasener Text greift zum falschen Schnitt.
+
+   Am Schreibtisch sieht man nichts davon. Chrome und Firefox machen
+   das nicht, und im Simulator auch keiner - es fällt erst auf einem
+   echten iPhone auf.
+   VERBOT: diese Zeile nie entfernen. Sie kostet nichts und hält die
+   Bühne zusammen. */
+html {
+  background: var(--paper); color: var(--ink);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
 
 body {
   font-family: var(--font-sans);

@@ -144,7 +144,9 @@ body { background: var(--ink); }
 .ctrl {
   position: fixed; z-index: 60; left: 24px; bottom: 20px;
   display: flex; align-items: center; gap: 10px;
+  transition: opacity 600ms var(--ease-out);
 }
+.ctrl.weg { opacity: 0; pointer-events: none; }
 .fsbtn {
   appearance: none; cursor: pointer;
   background: rgba(15,15,15,0.62);
@@ -160,7 +162,17 @@ body { background: var(--ink); }
 /* Die Taste im Knopf. Sie steht drin, weil das Deck auch gelesen wird,
    ohne dass jemand die Tastenkürzel kennt - und der Knopf funktioniert
    auf dem Telefon, wo es kein O gibt. */
-.ovbtn .k {
+.ctrl-hint {
+  font-family: var(--font-mono); font-weight: 500; font-size: 11px;
+  letter-spacing: var(--tracking-eyebrow);
+  color: rgba(240,240,240,0.5);
+  padding-left: 4px; pointer-events: none; white-space: nowrap;
+}
+.ctrl-hint[hidden] { display: none; }
+.ctrl-hint .k { margin-right: 4px; }
+.ctrl-hint .k + .k { margin-left: -2px; }
+
+.ovbtn .k, .ctrl-hint .k {
   display: inline-block; min-width: 14px; margin-right: 7px;
   padding: 1px 3px 0;
   border: 1px solid currentColor; border-radius: 3px;
@@ -2530,3 +2542,64 @@ body { background: var(--ink); }
   width: 100%; height: 100%; max-width: none; max-height: none;
   object-fit: cover; transform: none; border-radius: 0;
 }
+
+
+/* ---- Kleine Schirme: die Kleinschrift anheben ------------------
+   Die Bühne ist 1920x1080 und wird auf das Fenster gerechnet. Auf
+   einem iPhone im Querformat (844x390) ist der Massstab 0.361 -
+   eine Quellenangabe mit 14px landet damit bei 5.1px auf dem Glas.
+   Gemessen am 06.09.2026: 32 von 37 Textstilen lagen unter 11px.
+
+   Angehoben werden nur die KLEINEN Stufen. Überschriften bleiben, wo
+   sie sind: 112px werden zu 40px auf dem Schirm und sind längst
+   lesbar. Würde man alles anheben, verschwände die Hierarchie - und
+   die Folie hat dann keine Ordnung mehr, dafür grosse Buchstaben.
+
+   Der Schalter `[data-klein]` kommt aus `fit()` in deck.js und hängt
+   am Massstab, nicht an der Fensterbreite - die Begründung steht
+   dort.
+   VERBOT: die grossen Stufen hier nicht anfassen. Wer --fs-h1 oder
+   --fs-giant anhebt, sprengt jede Folie, auf der die Überschrift
+   heute schon zwei Zeilen braucht. */
+:root[data-klein="1"] {
+  --fs-body:     30px;   /* war 21 → 10.8px auf dem Schirm */
+  --fs-small:    28px;   /* war 18 →  10.1 */
+  --fs-meta:     26px;   /* war 15 →   9.4 */
+  --fs-eyebrow:  26px;   /* war 16 →   9.4 */
+  --fs-num:      26px;   /* war 14 →   9.4 */
+  --fs-lead:     32px;   /* war 26 →  11.6 */
+  --fs-kicker:   34px;   /* war 30 →  12.3 */
+  --fs-h4:       36px;   /* war 30 →  13.0 */
+}
+
+/* Die zwanzig Stellen, die ihre Grösse fest im CSS tragen und
+   deshalb an den Tokens vorbeilaufen. Sie sind nicht geraten,
+   sondern am 06.09.2026 im laufenden Deck gemessen: alles, was auf
+   einem iPhone im Querformat unter 9px landete.
+   Reihenfolge wie gemessen, von der kleinsten Stufe aufwärts.
+   VERBOT: diese Liste nicht aus dem Bauch erweitern. Wer eine Stufe
+   dazunimmt, misst vorher - sonst wächst hier eine zweite Typografie
+   heran, die niemand mehr überblickt. */
+:root[data-klein="1"] .aiflow-gate span em { font-size: 24px; }
+:root[data-klein="1"] .aiflow-side .lab    { font-size: 24px; }
+:root[data-klein="1"] .offer-card .tier    { font-size: 24px; }
+:root[data-klein="1"] .t-contact .contact-row dt { font-size: 24px; }
+:root[data-klein="1"] .proof .disc         { font-size: 26px; }
+:root[data-klein="1"] .proof .src          { font-size: 24px; }
+:root[data-klein="1"] .bang-ax             { font-size: 24px; }
+:root[data-klein="1"] .tonbtn              { font-size: 24px; }
+:root[data-klein="1"] .person .p-role      { font-size: 26px; }
+:root[data-klein="1"] .uni-lab small       { font-size: 26px; }
+:root[data-klein="1"] .money-row .lab small { font-size: 26px; }
+:root[data-klein="1"] .ref-tags span       { font-size: 22px; }
+:root[data-klein="1"] .agenda-item .n      { font-size: 26px; }
+:root[data-klein="1"] .linkbtn             { font-size: 26px; }
+:root[data-klein="1"] .offer-card .price small { font-size: 26px; }
+:root[data-klein="1"] .track-step p        { font-size: 23px; }
+:root[data-klein="1"] .service li          { font-size: 27px; }
+:root[data-klein="1"] .person p            { font-size: 28px; }
+:root[data-klein="1"] .proof p             { font-size: 29px; }
+:root[data-klein="1"] .track-step h4       { font-size: 26px; }
+/* Referenztexte sind die längsten Absätze im Deck - der Limeco-Fall
+   lief mit 30px um 38px aus der Folie. 27px ist die gemessene Grenze. */
+:root[data-klein="1"] .ref-body p          { font-size: 27px; }
