@@ -35,8 +35,14 @@
 html, body { height: 100%; overflow: hidden; margin: 0; }
 body { background: var(--ink); }
 
+/* Der Streifen unten gehört der Bedienleiste - `fit()` in `deck.js`
+   setzt `--leiste` und rechnet die Bühne in den Rest. Ohne dieses
+   `padding-bottom` sässe die Bühne mittig im GANZEN Fenster und der
+   Streifen läge halb unter ihr. */
 .viewport {
   position: fixed; inset: 0;
+  padding-bottom: var(--leiste, 0px);
+  box-sizing: border-box;
   display: flex; align-items: center; justify-content: center;
 }
 
@@ -63,6 +69,21 @@ body { background: var(--ink); }
               visibility 0s linear var(--dur-slide);
   background: var(--paper); color: var(--ink);
 }
+/* Die Verkleinerung, die die Selbstprüfung in `deck.js` setzt.
+
+   `zoom` und die Gegenrechnung in der Breite gehören zusammen: Die
+   Folie liegt auf `inset: 0` und wäre mit `zoom` allein kleiner als
+   die Bühne. Die Prozentangaben geben ihr in ihren EIGENEN Koordinaten
+   mehr Platz, den `zoom` danach wieder auf Bühnengrösse bringt. Netto:
+   alles wird kleiner, mehr passt hinein, die Folie füllt weiterhin
+   das Blatt.
+   VERBOT: nicht von Hand setzen. Diese Klasse gehört der Messung. */
+.slide.zufit {
+  zoom: var(--fit, 1);
+  width: calc(100% / var(--fit, 1));
+  height: calc(100% / var(--fit, 1));
+}
+
 .slide.active {
   opacity: 1; visibility: visible;
   transform: translateY(0);
@@ -142,16 +163,14 @@ body { background: var(--ink); }
    VERBOT: kein transparenter Hintergrund mehr. Was ausserhalb der Bühne
    sitzt, weiss nie, worauf es landet. */
 .ctrl {
-  position: fixed; z-index: 60; bottom: 20px;
+  position: fixed; z-index: 60; bottom: 8px;
   left: calc(var(--buehne-links, 0px) + 24px);
   display: flex; align-items: center; gap: 10px;
   /* Umbruch statt Überlauf: Auf einem Telefon ist die Leiste breiter
      als der Schirm, und dann wurde «BLÄTTERN» rechts abgeschnitten.
      Sie liegt ohnehin im schwarzen Rand, dort ist Platz nach unten. */
   flex-wrap: wrap; max-width: calc(100vw - var(--buehne-links, 0px) - 48px);
-  transition: opacity 600ms var(--ease-out);
 }
-.ctrl.weg { opacity: 0; pointer-events: none; }
 .fsbtn {
   appearance: none; cursor: pointer;
   background: rgba(15,15,15,0.62);
@@ -2481,6 +2500,13 @@ body { background: var(--ink); }
 /* Auf der Preisfolie sitzt er rechts neben den Karten, im leeren
    Feld zwischen Kartenrand und Folienrand. Nachgemessen: Die Karten
    enden bei x 1435, der Satzspiegel bei 1800. */
+/* Grundposition: rechts oben, unter dem Lockup. Ohne sie klebte der
+   Störer in der linken oberen Ecke - er hatte bis zum 06.09.2026 nur
+   eine Position für `t-offer` und war damit an einen Folientyp
+   gefesselt. Jetzt trägt ihn jede Folie, die rechts Platz hat.
+   Wer ihn woanders braucht, setzt `top`/`right` auf der Folie - aber
+   dann prüft er nach, dass er keinen Text verdeckt. */
+.stoerer { right: 120px; top: 260px; }
 .t-offer .stoerer { right: 120px; top: 300px; }
 
 /* ---- DOOH-Stele · Rahmen für Aussenwerbung -------------------
@@ -2658,3 +2684,10 @@ body { background: var(--ink); }
    heranzoomt, schlägt eine, die unten abgeschnitten ist.
    VERBOT: hier nichts vergrössern, ohne die Fussnote nachzumessen. */
 :root[data-klein="1"] .t-leistung          { --fs-body: 21px; --fs-small: 18px; --fs-meta: 15px; }
+
+/* Auf kleinen Schirmen wird die Leiste mit kleiner - sie skaliert
+   nicht mit der Bühne, weil sie ausserhalb liegt, und wäre sonst
+   gegenüber einer geschrumpften Folie riesig. */
+:root[data-klein="1"] .ctrl { gap: 7px; bottom: 6px; }
+:root[data-klein="1"] .fsbtn { font-size: 10px; padding: 5px 12px 6px; }
+:root[data-klein="1"] .ctrl-hint { font-size: 10px; }

@@ -163,7 +163,24 @@
   var kannZoom = typeof CSS !== 'undefined' && CSS.supports && CSS.supports('zoom', '2');
 
   function fit() {
-    var s = Math.min(innerWidth / 1920, innerHeight / 1080);
+    /* Ein Streifen am unteren Rand gehört der Bedienleiste. Die Bühne
+       rechnet sich in das, was übrig bleibt.
+
+       Vorher lag die Leiste ÜBER der Folie und blendete sich nach
+       sechs Sekunden aus, damit sie den Text nicht zudeckt. Das war
+       ein Ausweichen: Auf einem 13-Zoll-Laptop füllt die Bühne das
+       Fenster bis auf einen Pixel, die Leiste verschwand also immer -
+       und mit ihr der Hinweis, wie man blättert. Simon hat sie am
+       06.09.2026 auf drei Geräten nicht gefunden.
+       Jetzt ist sie Teil des Layouts. Sie kostet ein paar Prozent
+       Bühnenhöhe und ist dafür immer da und nie im Weg.
+
+       Der Streifen wächst nicht mit: 46px auf dem Laptop, auf einem
+       Telefon höchstens 9% der Höhe - sonst frisst er dort, wo die
+       Bühne ohnehin klein ist. */
+    var leiste = Math.min(46, Math.round(innerHeight * 0.09));
+    document.documentElement.style.setProperty('--leiste', leiste + 'px');
+    var s = Math.min(innerWidth / 1920, (innerHeight - leiste) / 1080);
     if (kannZoom) {
       stage.style.zoom = s;
     } else {
@@ -333,27 +350,12 @@
 
   document.body.appendChild(leiste);
 
-  /* Die Leiste blendet sich aus, wie es früher der Hinweis unten
-     mittig tat - und aus einem handfesten Grund: Sie sitzt AUSSERHALB
-     der Bühne und wird deshalb nicht mitskaliert. Auf einem grossen
-     Schirm liegt sie im schwarzen Rand und stört niemanden. Ist das
-     Fenster 16:9, gibt es keinen Rand, und dann liegt eine 32px hohe
-     Leiste auf einer Folie, deren eigener Rand auf 26px geschrumpft
-     ist. Sie deckt den Fliesstext zu.
-     Jede Eingabe holt sie zurück - wer sie sucht, bewegt die Maus
-     oder tippt, und beides tut man ohnehin.
-     VERBOT: nicht dauerhaft einblenden. Was ausserhalb der Bühne
-     liegt und nicht mitskaliert, gehört nicht dauerhaft ins Bild. */
-  var wegTimer;
-  function leisteZeigen() {
-    leiste.classList.remove('weg');
-    clearTimeout(wegTimer);
-    wegTimer = setTimeout(function () { leiste.classList.add('weg'); }, 6000);
-  }
-  ['pointermove', 'pointerdown', 'keydown'].forEach(function (ev) {
-    addEventListener(ev, leisteZeigen, { passive: true });
-  });
-  leisteZeigen();
+  /* Kein Ausblenden mehr. Die Leiste sitzt seit dem 06.09.2026 in
+     einem eigenen Streifen ausserhalb der Bühne und deckt deshalb
+     nichts mehr zu - der Grund fürs Verschwinden ist weg.
+     VERBOT: nicht wieder ausblenden. Ein Hinweis, den man nur in den
+     ersten sechs Sekunden sieht, ist für den, der später hinschaut,
+     kein Hinweis. */
 
   function inFullscreen() {
     return !!(document.fullscreenElement || document.webkitFullscreenElement);
@@ -811,7 +813,96 @@
   /* ---------------------------------------------------------------
      Start
      --------------------------------------------------------------- */
+  /* ---------------------------------------------------------------
+     Die Selbstprüfung
+
+     Jede Folie misst nach dem Aufbau nach, ob ihr Inhalt in die Bühne
+     passt. Tut er es nicht, verkleinert sie sich in Schritten, bis er
+     passt. Nicht weil eine Folie zu voll wäre, sondern weil KEINE
+     Messung am Schreibtisch für jeden Browser gilt.
+
+     Warum es das braucht - die Lehre vom 06.09.2026: Die Schrift-
+     grössen waren in Chrome vermessen und für sicher erklärt. Auf
+     einem iPhone haben sich Textblöcke übereinandergeschoben, auf
+     einem iPad brach eine Überschrift mit FESTEM Zeilenumbruch statt
+     in drei in fünf Zeilen um und der Fliesstext lief unten heraus.
+     iOS Safari vergrössert Schriften eigenmächtig, Safari bricht
+     Zeilen anders um als Chrome, und beides sieht man hier nie.
+
+     Diese Schleife ist die Antwort darauf. Sie misst dort, wo es
+     zählt: im Browser, der die Folie wirklich zeichnet. Damit ist
+     Überlauf strukturell ausgeschlossen - nicht weil jemand richtig
+     gerechnet hat, sondern weil die Folie selbst nachsieht.
+
+     Der Boden liegt bei 0.72. Wer darunter käme, hat kein Anzeige-
+     problem, sondern zu viel auf der Folie - und das repariert keine
+     Mechanik. Deshalb dort eine Meldung in der Konsole statt stiller
+     Weiterverkleinerung.
+     VERBOT: diese Schleife nicht benutzen, um Folien zu überladen.
+     Sie ist ein Sicherheitsnetz, kein Freibrief.
+     --------------------------------------------------------------- */
+  /* Gemessen wird die UNTERKANTE des tiefsten Textes, über die
+     Layout-Positionen (offsetTop/offsetHeight), nicht über
+     `scrollHeight` und nicht über `getBoundingClientRect`.
+
+     Drei Gründe, alle am 06.09.2026 belegt:
+     `scrollHeight` zählt Elemente mit, die für die Einlauf-Animation
+     verschoben sind - damit meldete es Überlauf auf drei Folien, bei
+     denen kein einziges Element herausragte.
+     `getBoundingClientRect` misst durch `zoom` und durch die
+     Transformationen von `data-rise` hindurch.
+     Und gemessen wird nur, was TEXT trägt: Vollbilder, Grafiken und
+     das Puro-Mockup ragen mit Absicht über den Rand.
+
+     Nur die Unterkante, nicht die Seite: Was zu breit ist, bricht um;
+     was zu hoch ist, verschwindet. Alle Fälle des Tages waren unten. */
+  function tiefsterText(s) {
+    var tief = 0;
+    var alle = s.querySelectorAll('*');
+    for (var k = 0; k < alle.length; k++) {
+      var n = alle[k];
+      if (n.closest('.spur')) continue;
+      var hatText = false;
+      for (var c = 0; c < n.childNodes.length; c++) {
+        if (n.childNodes[c].nodeType === 3 && n.childNodes[c].textContent.trim()) { hatText = true; break; }
+      }
+      if (!hatText) continue;
+      var y = 0, e = n;
+      while (e && e !== s) { y += e.offsetTop; e = e.offsetParent; }
+      var u = y + n.offsetHeight;
+      if (u > tief) tief = u;
+    }
+    return tief;
+  }
+
+  function passt(s) {
+    return tiefsterText(s) <= s.clientHeight + 2;
+  }
+
+  function nachmessen() {
+    slides.forEach(function (s) {
+      /* Immer erst zurücksetzen: Wird das Fenster grösser, soll eine
+         Folie ihre Verkleinerung auch wieder loswerden. */
+      s.classList.remove('zufit');
+      s.style.removeProperty('--fit');
+      if (passt(s)) return;
+      for (var f = 0.96; f >= 0.72; f -= 0.04) {
+        s.style.setProperty('--fit', Math.round(f * 100) / 100);
+        s.classList.add('zufit');
+        if (passt(s)) return;
+      }
+      if (window.console && console.warn) {
+        console.warn('Folie passt auch bei 0.72 nicht: ' + (s.dataset.title || '?'));
+      }
+    });
+  }
+
   fit();
+  nachmessen();
+  if (document.fonts && document.fonts.ready) { document.fonts.ready.then(nachmessen); }
+  var nmT;
+  addEventListener('resize', function () { clearTimeout(nmT); nmT = setTimeout(nachmessen, 200); });
+
   var start = parseInt(location.hash.slice(1), 10);
   show(Number.isFinite(start) && start >= 1 ? start - 1 : 0);
   if (hint) setTimeout(function () { hint.classList.add('hide'); }, 6000);
