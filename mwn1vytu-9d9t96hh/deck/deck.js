@@ -181,6 +181,18 @@
        bei 5.1px auf dem Schirm. Ab etwa 0.55 ist die Grenze, darunter
        wird die kleinste Stufe unlesbar. */
     document.documentElement.dataset.klein = s < 0.55 ? '1' : '';
+
+    /* Wo die Bühne anfängt. Die Bedienleiste hängt daran und nicht am
+       Fensterrand: Ist das Fenster breiter als 16:9, liegen links und
+       rechts schwarze Balken, und eine Leiste bei `left: 24px` landet
+       halb auf Schwarz und halb auf der Folie. Genau so sah Simon sie
+       am 06.09.2026. Jetzt beginnt sie 24px INNERHALB der Bühne und
+       liegt damit immer ganz auf der Folie.
+       Nur waagrecht: Ist das Fenster höher als 16:9, liegen die Balken
+       oben und unten, und dort ist die Leiste ganz auf Schwarz - das
+       ist richtig so und deckt nichts zu. */
+    var rand = Math.max(0, (innerWidth - 1920 * s) / 2);
+    document.documentElement.style.setProperty('--buehne-links', rand + 'px');
   }
 
   /* ---------------------------------------------------------------
@@ -286,7 +298,13 @@
 
   var blaettern = document.createElement('span');
   blaettern.className = 'ctrl-hint';
-  blaettern.innerHTML = '\u2190\u2009\u2192\u2002BL\u00c4TTERN';
+  /* Zwei Fassungen, das CSS zeigt die passende: Pfeiltasten gibt es
+     nur mit Tastatur, auf einem Telefon blättert man durch Tippen -
+     rechts vor, links zurück. Beides steht im Markup, damit keine
+     Logik raten muss, was für ein Gerät davorsitzt. */
+  blaettern.innerHTML =
+    '<span class="w-taste">\u2190\u2009\u2192\u2002BL\u00c4TTERN</span>' +
+    '<span class="w-tipp">TIPPEN ZUM BL\u00c4TTERN</span>';
   leiste.appendChild(blaettern);
 
   document.body.appendChild(leiste);

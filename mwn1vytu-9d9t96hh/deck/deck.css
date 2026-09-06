@@ -142,12 +142,13 @@ body { background: var(--ink); }
    VERBOT: kein transparenter Hintergrund mehr. Was ausserhalb der Bühne
    sitzt, weiss nie, worauf es landet. */
 .ctrl {
-  position: fixed; z-index: 60; left: 24px; bottom: 20px;
+  position: fixed; z-index: 60; bottom: 20px;
+  left: calc(var(--buehne-links, 0px) + 24px);
   display: flex; align-items: center; gap: 10px;
   /* Umbruch statt Überlauf: Auf einem Telefon ist die Leiste breiter
      als der Schirm, und dann wurde «BLÄTTERN» rechts abgeschnitten.
      Sie liegt ohnehin im schwarzen Rand, dort ist Platz nach unten. */
-  flex-wrap: wrap; max-width: calc(100vw - 48px);
+  flex-wrap: wrap; max-width: calc(100vw - var(--buehne-links, 0px) - 48px);
   transition: opacity 600ms var(--ease-out);
 }
 .ctrl.weg { opacity: 0; pointer-events: none; }
@@ -163,6 +164,17 @@ body { background: var(--ink); }
               border-color var(--dur-base) var(--ease-out),
               background-color var(--dur-base) var(--ease-out);
 }
+/* Die Taste im Knopf. Sie steht drin, weil das Deck auch gelesen wird,
+   ohne dass jemand die Tastenkürzel kennt - und der Knopf funktioniert
+   auf dem Telefon, wo es kein O gibt. */
+.ctrl-hint {
+  font-family: var(--font-mono); font-weight: 500; font-size: 11px;
+  letter-spacing: var(--tracking-eyebrow);
+  color: rgba(240,240,240,0.5);
+  padding-left: 4px; pointer-events: none; white-space: nowrap;
+}
+.ctrl-hint[hidden] { display: none; }
+
 /* Die Taste steht HINTER dem Wort, klein und gedämpft - kein Kästchen.
    Die erste Fassung vom 06.09.2026 setzte sie als umrandeten Tastenkopf
    davor. Auf dem Telefon brach der Knopf dadurch auf zwei Zeilen um und
@@ -181,6 +193,33 @@ body { background: var(--ink); }
 .fsbtn[hidden] { display: none; }
 .fsbtn:hover { color: var(--paper); border-color: rgba(240,240,240,0.6); background: rgba(15,15,15,0.82); }
 .fsbtn:focus-visible { outline: 2px solid var(--lime); outline-offset: 3px; }
+
+/* ---- Auf dem Telefon: weniger Leiste -----------------------------
+   Geschaltet wird nach EINGABEART, nicht nach Bildschirmbreite. Ein
+   schmales Fenster am Laptop hat weiterhin Tastatur und Vollbild;
+   ein Telefon hat beides nicht.
+
+   Der Vollbild-Knopf fällt weg. Safari auf dem iPhone kennt die
+   Vollbild-Schnittstelle nicht - der Knopf tat dort still gar nichts,
+   und ein Knopf ohne Wirkung ist schlechter als keiner. Die Tasten-
+   hinweise fallen mit weg, weil ohne Tastatur niemand ein F oder O
+   drücken kann. Übrig bleibt, was auf dem Gerät wirklich geht:
+   die Übersicht antippen und durch Tippen blättern.
+   VERBOT: nicht nach `max-width` schalten. Simons Entscheid vom
+   06.09.2026 gilt dem Gerät, nicht der Fenstergrösse. */
+/* Grundfall Tastatur: die Pfeil-Fassung steht, die Tipp-Fassung ruht.
+   REIHENFOLGE: Diese Zeile MUSS vor der Abfrage stehen. Stand sie
+   danach, gewann sie gegen `display: inline` und der Hinweis war auf
+   dem Telefon unsichtbar - der Fehler war am 06.09.2026 eine halbe
+   Stunde lang drin. */
+.w-tipp { display: none; }
+
+@media (hover: none) and (pointer: coarse) {
+  .fsbtn:not(.ovbtn) { display: none; }
+  .fsbtn .k { display: none; }
+  .w-taste { display: none; }
+  .w-tipp  { display: inline; }
+}
 
 /* ---- Cornermark ------------------------------------------------
    Das Original-Lockup auf jeder Folie, oben rechts. Nie nachgebaut,
