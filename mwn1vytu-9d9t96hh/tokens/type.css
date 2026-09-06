@@ -19,14 +19,22 @@
 
    Am Schreibtisch sieht man nichts davon. Chrome und Firefox machen
    das nicht, und im Simulator auch keiner - es fällt erst auf einem
-   echten iPhone auf.
+   echten Gerät auf.
+
+   NACHTRAG 06.09.2026, ABENDS: Die Regel stand zuerst nur auf `html`
+   und hat auf dem iPhone gewirkt, auf dem iPad aber nicht - dort
+   brach eine Überschrift mit festem Zeilenumbruch statt in drei in
+   fünf Zeilen um, und der Fliesstext lief unten heraus. Sie steht
+   jetzt auf `html, body, .stage, .slide` und mit `!important`.
+   Vier Selektoren für eine Zeile sind unschön; ein Browser, der die
+   Schriftgrösse eigenmächtig ändert, ist unschöner.
    VERBOT: diese Zeile nie entfernen. Sie kostet nichts und hält die
    Bühne zusammen. */
-html {
-  background: var(--paper); color: var(--ink);
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
+html, body, .stage, .slide {
+  -webkit-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
 }
+html { background: var(--paper); color: var(--ink); }
 
 body {
   font-family: var(--font-sans);
