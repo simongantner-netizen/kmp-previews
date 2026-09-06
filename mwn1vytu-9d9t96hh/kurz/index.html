@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="de-CH">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<title>Kampagnons für Naturspur – zur Offerte, 8. September 2026</title>
+<link rel="preload" href="../assets/fonts/Calibre-Medium.otf"   as="font" type="font/otf" crossorigin>
+<link rel="preload" href="../assets/fonts/Calibre-Bold.otf"     as="font" type="font/otf" crossorigin>
+<link rel="preload" href="../assets/fonts/Calibre-Semibold.otf" as="font" type="font/otf" crossorigin>
+<link rel="preload" href="../assets/fonts/Calibre-Regular.otf"  as="font" type="font/otf" crossorigin>
+<link rel="preload" href="../assets/fonts/Calibre-Black.otf"    as="font" type="font/otf" crossorigin>
+<!-- Vor dem Stylesheet, mit Absicht: Die Schriften stehen am Ende einer
+     @import-Kette (styles.css → tokens/fonts.css) und werden sonst erst
+     entdeckt, wenn das ganze CSS geladen und geparst ist. Der
+     Preload-Scanner des Browsers findet diese Zeilen dagegen sofort,
+     noch bevor er den <head> fertig gelesen hat.
+     `crossorigin` ist Pflicht, auch bei gleicher Herkunft - Schriften
+     werden immer im CORS-Modus geholt, und ohne das Attribut lädt der
+     Browser sie ein zweites Mal. -->
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<div class="viewport">
+  <div class="stage" id="stage">
+
+    <!-- ============================================================
+         KURZDECK FÜR NATURSPUR - Beilage zur Offerte, 05.09.2026
+         Petra Wiesenhütter und Christian Hänni, Naturspur GmbH.
+
+         Das ist die abgespeckte Fassung des Gesprächsdecks
+         (`../starter/index.html`, 29 Folien). Sie liegt der Offerte
+         A260005 bei und wird gelesen, nicht vorgetragen - deshalb
+         muss jede Folie ohne Simon danebenstehen können.
+
+         WAS RAUS IST: der ganze Preis-Block (Folien 22-28) und die
+         beiden Gesprächsfolien - «Welche Fragen sich jetzt stellen»
+         (Vermutungen von vor dem Termin) und «Ihr wärt unser erster
+         gemeinsamer Kunde» (im Raum Ehrlichkeit, auf Papier ein
+         Argument gegen uns).
+
+         WAS NEU IST: neun Referenzfolien im t-ref-Format und eine
+         einzige Preisfolie, die auf die Offerte verweist. Dazu die
+         Spur, die auf Folie 2 losgeht und auf Folie 29 wieder
+         hereinkommt.
+
+         REGEL WIE IMMER: was besser wird, geht in den Standard
+         zurück, nicht in dieses Deck. `.t-case.flip` ist genau so
+         entstanden und liegt jetzt in `deck/deck.css`.
+         ============================================================ -->
+
+    <!-- ============================================================
+         01 · t-title – Titel
+         Einmal pro Deck, immer die erste. Aurora an.
+         ============================================================ -->
+    <section class="slide center t-title aurora" data-title="Titel">
+      <h1 data-r="2" data-rise>Brand &amp; Website für <span class="hl">Naturspur</span>.</h1>
+      <div class="tt-meta" data-r="3">
+        <span>FÜR PETRA UND CHRISTIAN</span>
+        <span>VORSTELLUNG · REFERENZEN · OFFERTE</span>
+        <span>8. SEPTEMBER 2026</span>
+      </div>
+    </section>
+
+
+
+    <!-- ============================================================
+         02 · t-statement - der Einstieg ins Dokument
+         Simons Text vom 05.09.2026, in die Stimme gebracht.
+
+         WARUM SIE HIER STEHT: Das Gesprächsdeck fiel nach dem Titel
+         direkt in die Übersicht. Das ging im Raum, weil Simon
+         danebenstand und den Ton selbst gemacht hat. Ein Dokument,
+         das ohne ihn ankommt, braucht den Ton auf dem Papier - sonst
+         liest sich Folie 3 wie eine Agenturbroschüre, die man
+         irgendwo bestellt hat.
+
+         «Spur» trägt den Marker, weil es ihr Firmenname ist. Das ist
+         der einzige Ort im Deck, an dem ein Wortspiel erlaubt ist:
+         hier ist es gemeint, überall sonst wäre es Dekoration.
+
+         REGEL DES TYPS: ein Gedanke, gross, höchstens EIN Kicker
+         darunter. Keine Liste. Wer einen zweiten Absatz will, will
+         eine zweite Folie.
+         ============================================================ -->
+    <section class="slide t-statement" data-title="Einstieg" data-spur="start">
+      <div class="eyebrow" data-r="1">Bevor es losgeht</div>
+      <h1 data-r="2" data-rise>Ihr habt bei uns eine <span class="hl">Spur</span> hinterlassen.</h1>
+      <p class="kicker" data-r="3" style="max-width:1250px;">Menschlich hat es von der ersten Minute an gepasst. Geblieben ist uns aber etwas anderes: wie sehr euch euer eigenes Geschäft fasziniert. Das hört man nach zwei Sätzen. Uns fasziniert neben eurem Business auch die andere Seite davon: Naturspur so zu inszenieren, dass daraus eine Marke wird, die euer Unternehmen nach vorne bringt. Eine Marke, an der ihr Freude habt. Und wir auch. Auf den nächsten Seiten steht zusammengefasst, wer wir sind, wie wir arbeiten und welche Kunden wir schon begleiten durften.</p>
+    </section>
+
+    <!-- ============================================================
+         03 · t-agenda – Übersicht
+         Steht vorne, damit der Raum weiss, was kommt.
+
+         REGEL: auf der Übersicht wird NICHTS unterstrichen. Der
+         Lime-Marker zeigt, worauf es auf einer Folie ankommt - auf
+         einer Liste, die alles gleich gewichtet, hebt er willkürlich
+         einen Punkt heraus und entwertet die anderen sechs.
+
+         Sechs Punkte. Der Preis-Block hat seit dem 17.08.2026 einen
+         eigenen Eintrag, sonst kommt er aus dem Nichts. In diesem
+         Deck fielen fünf Folien weg, deshalb sind es sechs statt
+         sieben - `.rows-7` steht folgerichtig nicht im Markup.
+         Verbot: sieben ist die Grenze, nicht der Anfang einer Reihe.
+         ============================================================ -->
+    <section class="slide t-agenda" data-title="Übersicht">
+      <div class="eyebrow" data-r="1">Übersicht</div>
+      <h1 data-r="2" data-rise style="margin-bottom:16px;">Worüber wir reden.</h1>
+      <div class="agenda">
+        <div class="agenda-item" data-r="3"><span class="n">01</span><h3>Unsere Überzeugung</h3><span class="dur">WARUM ES ZÄHLT</span></div>
+        <div class="agenda-item" data-r="3"><span class="n">02</span><h3>Wer am Tisch sitzt</h3><span class="dur">SIMON, DANIEL UND SVEN</span></div>
+        <div class="agenda-item" data-r="4"><span class="n">03</span><h3>Was wir können</h3><span class="dur">DREI DISZIPLINEN</span></div>
+        <div class="agenda-item" data-r="4"><span class="n">04</span><h3>Wie wir arbeiten</h3><span class="dur">MENSCH UND KI</span></div>
+        <div class="agenda-item" data-r="5"><span class="n">05</span><h3>Für wen wir arbeiten</h3><span class="dur">REFERENZEN</span></div>
+        <div class="agenda-item" data-r="5"><span class="n">06</span><h3>Was das kostet</h3><span class="dur">DIE OFFERTE</span></div>
+      </div>
+    </section>
+
+
+    <!-- ============================================================
+         03 · t-statement – Unsere Überzeugung
+         Der Satz, auf dem die ganze Präsentation steht. Er kommt vor
+         allem anderen, weil ohne ihn jede Leistung wie ein Kostenblock
+         aussieht.
+         ============================================================ -->
+    <section class="slide t-statement" data-title="Überzeugung I">
+      <div class="eyebrow" data-r="1">01 – Unsere Überzeugung</div>
+      <h1 class="giant" data-r="2" data-rise>Branding, Marketing und Kommunikation lösen <span class="hl">Businessprobleme</span>.</h1>
+    </section>
+
+
+    <!-- ============================================================
+         04 · t-statement – Unsere Überzeugung, zweiter Teil
+         Der Nachsatz bekommt eine eigene Folie, weil er die
+         eigentliche Behauptung ist. Auf derselben Folie wäre er
+         Fussnote gewesen.
+         ============================================================ -->
+    <section class="slide t-statement" data-title="Überzeugung II">
+      <div class="eyebrow" data-r="1">01 – Unsere Überzeugung</div>
+      <h1 class="giant" data-r="2" data-rise>Sie sind nicht nice-to-have,</h1>
+      <h1 class="giant" data-r="3" data-rise style="margin-top:24px;">sondern <span class="hl">erfolgsentscheidend</span>.</h1>
+    </section>
+
+
+    <!-- ============================================================
+         06 · t-proof – Belege
+         Drei Zahlen, eine pro Disziplin. Die Quelle steht direkt unter
+         der Zahl, nicht in einer Fussnote: eine Zahl, deren Herkunft
+         man suchen muss, wirkt erfunden.
+         Verbot: nie mehr als drei Spalten, nie eine Zahl ohne Quelle.
+         ============================================================ -->
+    <section class="slide t-proof" data-title="Belege">
+      <div class="eyebrow" data-r="1">Warum es nicht nice-to-have ist</div>
+      <h1 data-r="2" data-rise style="margin-bottom:12px;">Das ist nicht Meinung. Das ist <span class="hl">gemessen</span>.</h1>
+      <div class="proofs">
+        <div class="proof" data-r="3">
+          <span class="disc">Branding</span>
+          <div class="fig"><span data-count="20" data-prefix="+" data-suffix=" %">+20 %</span></div>
+          <p>So viel höher liegt die EBIT-Marge von Unternehmen mit starker Marke. Nicht weil sie billiger produzieren, sondern weil sie mehr verlangen können.</p>
+          <span class="src">McKinsey, B2B-Markenstudie mit über 700 Einkaufsentscheidern</span>
+        </div>
+        <div class="proof" data-r="4">
+          <span class="disc">Marketing</span>
+          <div class="fig"><span data-count="30" data-prefix="+" data-suffix=" %">+30 %</span></div>
+          <p>So viel schneller wächst der Umsatz bei Unternehmen, die im obersten Viertel für Marketing- und Vertriebsfähigkeiten liegen, verglichen mit dem Schnitt ihrer Branche.</p>
+          <span class="src">McKinsey, Building marketing and sales capabilities to beat the market</span>
+        </div>
+        <div class="proof" data-r="5">
+          <span class="disc">Kommunikation</span>
+          <div class="fig"><span data-count="23" data-prefix="+" data-suffix=" %">+23 %</span></div>
+          <p>So viel profitabler arbeiten Teams, die wissen, wofür ihr Unternehmen steht und was das für ihre eigene Arbeit heisst. Verglichen mit Teams, in denen das niemand erklärt hat.</p>
+          <span class="src">Gallup Q12-Metaanalyse, 183’806 Einheiten in 90 Ländern</span>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============================================================
+         07 · t-statement – Und jetzt?
+         Die Brücke von der Überzeugung zu uns. Drei Wörter, drei
+         Sätze, Schluss.
+         ============================================================ -->
+    <section class="slide ink t-statement" data-title="Und jetzt?">
+      <div class="eyebrow" data-r="1">Und jetzt?</div>
+      <h1 class="giant" data-r="2" data-rise>Branding. Marketing. Kommunikation.</h1>
+      <p class="kicker" data-r="3" style="font-size:38px; line-height:1.25; margin-top:44px;">Alles aus einer Hand.<br>Von zwei Leuten, die es können.<br>Unterstützt von KI. Damit <span class="hl">breiter, besser und schneller</span>.</p>
+    </section>
+
+
+
+    <!-- ============================================================
+         09 · t-embed – Wie wir arbeiten
+         Drei Blätter fahren versetzt herein und setzen sich zum
+         Signet zusammen: Kampagnons, verstärkt mit KI, eingebettet
+         im Unternehmen. Ohne die Beschriftung sind es nur drei Flecken.
+
+         NUR IN DIESEM DECK steht «Unternehmen» statt «KMU». Simons
+         Entscheid vom 05.09.2026: Naturspur sind zwei Leute in
+         Gründung, für die «KMU» nach Kategorie klingt statt nach
+         ihnen. Im Standard bleibt «KMU» - das ist bei Kampagnons ein
+         Positionierungswort («KMU brauchen keine Agentur») und wird
+         nicht wegen eines Kunden aus dem Baukasten genommen.
+         ============================================================ -->
+    <section class="slide t-embed has-satz center" data-title="Wie wir arbeiten">
+      <div class="eyebrow" data-r="1">Kampagnons, verstärkt mit KI, eingebettet in eurem Unternehmen</div>
+      <div class="embed-scene">
+        <div class="embed-shape embed-shape-lime">
+          <svg class="embed-blob" viewBox="0 0 626 628" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+            <defs><clipPath id="emb-clip-lime"><rect x="157.56" y="145.93" width="398.35" height="383.83"/></clipPath></defs>
+            <g clip-path="url(#emb-clip-lime)">
+              <path fill="var(--signet-lime)" d="M186.23,415.09c-22.68-61.93-27.69-153.82-10.31-207.03,15.85-57.4,56.61-72.66,126.69-34.89,70.08,37.78,130.91,68.31,170.57,75.93,41.18,11.8,58.63-2.79,72.28,34.47,11.18,30.52,17.44,109.93.35,163.94-16.14,56.6-55.62,87.81-114.21,81.43-58.58-6.37-112.8-15.36-152.74-23.77-40.89-11-67.51-21.41-92.65-90.09"/>
+            </g>
+          </svg>
+        </div>
+        <div class="embed-shape embed-shape-pink">
+          <svg class="embed-blob" viewBox="0 0 626 628" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+            <defs><clipPath id="emb-clip-pink"><rect x="157.56" y="78.22" width="360.13" height="471.97"/></clipPath></defs>
+            <g clip-path="url(#emb-clip-pink)">
+              <path fill="var(--signet-pink)" d="M489.28,393.49c-35.35,55.69-108.81,131.44-161.6,150.04-55.19,22.35-89.73-12.48-102.39-91.08-12.67-78.6-24.25-149.56-42.34-185.66-15.7-39.86-37.9-44.84-16.62-78.34,17.42-27.44,76.62-80.72,129.88-100.04,54.73-21.62,103.54-9.28,134.12,41.09,30.6,50.37,56.44,98.86,74.08,135.68,16.15,39.13,24.08,66.59-15.12,128.32"/>
+            </g>
+          </svg>
+        </div>
+        <div class="embed-shape embed-shape-violet">
+          <svg class="embed-blob" viewBox="0 0 626 628" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+            <defs><clipPath id="emb-clip-violet"><rect x="70.11" y="145.93" width="432.59" height="336.54"/></clipPath></defs>
+            <g clip-path="url(#emb-clip-violet)">
+              <path fill="var(--signet-purple)" d="M426.18,209.2c37.8,54.04,79.5,150.98,76.36,206.86-.58,59.54-46.01,78.04-123.43,59.52-77.42-18.52-147.39-35.11-187.66-32.3-42.83-.83-55.96,17.75-78.72-14.76-18.64-26.63-45.08-101.76-42.43-158.36,1.08-58.84,31.24-99.15,89.49-108.03,58.25-8.88,112.97-14.1,153.74-16.22,42.33.12,70.73,3.36,112.66,63.28"/>
+            </g>
+          </svg>
+        </div>
+        <div class="embed-labels">
+          <div class="embed-label is-ki">Künstliche Intelligenz</div>
+          <div class="embed-label is-kmu">Euer Unternehmen</div>
+          <div class="embed-label is-kamp">Kampagnons</div>
+        </div>
+      </div>
+      <!-- Der Satz unter der Grafik ist neu seit dem 05.09.2026, und
+           die alte Notiz an dieser Stelle sagt genau, warum es ihn
+           jetzt braucht: «Den Satz spricht Simon.» Das stimmte, solange
+           die Folie vorgetragen wurde. Dieses Deck wird gelesen - und
+           ohne Stimme sind drei Kreise nur drei Flecken.
+
+           Er erklärt die SCHNITTMENGE, nicht die KI. Was die KI bei uns
+           tut, steht drei Folien später ausführlich; würde es hier
+           nochmal stehen, schwächten sich beide Folien gegenseitig.
+           Deshalb hier nur der Satz, der die Verantwortung klärt.
+
+           VERBOT: nicht länger. Vier Sätze sind die Grenze, sonst
+           erschlägt der Text das Bild, von dem die Folie lebt. -->
+      <p class="embed-satz" data-r="6">Wenn ihr mit uns arbeitet, fühlt es sich an wie mit jemandem aus dem eigenen Haus. Auf dem Papier sind wir ein externer Dienstleister, im Alltag merkt ihr davon wenig: Wir hören zu, wir wollen euer Geschäft verstehen, und wir machen es euch einfach. Die KI hilft uns dabei, dort, wo sie etwas kann. Was von uns kommt, hat nie eine Maschine allein gebaut: Wir wissen, wie man sie führt, damit bessere Arbeit herauskommt.</p>
+    </section>
+
+
+    <!-- ============================================================
+         10 · t-person – Wer am Tisch sitzt
+         Der Name liegt hinter der Person, der Freisteller darüber.
+         Name in Lime wie auf kampagnons.ch.
+         ============================================================ -->
+    <style>
+      /* «Kampagnons · Inhaber und Geschäftsführer» läuft über zwei Zeilen,
+         die beiden anderen Rollen über eine. Ohne feste Mindesthöhe rutschen
+         die drei Namen auf verschiedene Höhen. */
+      .t-person .p-role { min-height: 42px; }
+    </style>
+    <section class="slide t-person" data-title="Wer am Tisch sitzt">
+      <div class="eyebrow" data-r="1">02 – Wer am Tisch sitzt</div>
+      <div class="persons trio">
+        <div class="person" data-r="2">
+          <div class="person-figure">
+            <img class="p-base" src="../assets/portraits/simon_kampagnons.webp" alt="Simon Gantner">
+            <div class="p-name">Simon</div>
+            <img class="p-top" src="../assets/portraits/simon_kampagnons_cutout.webp" alt="" aria-hidden="true">
+          </div>
+          <span class="p-role">Kampagnons · Inhaber und Geschäftsführer</span>
+          <h3>Simon Gantner</h3>
+          <p>Zehn Jahre Marketing und Kommunikation – drei Agenturen und eine grosse Versicherung. Angefangen hat er bei Daniel als Junior.</p>
+        </div>
+        <div class="person" data-r="3">
+          <div class="person-figure" data-focus="high">
+            <img class="p-base" src="../assets/portraits/daniel_kampagnons_2.webp" alt="Daniel Wagner">
+            <div class="p-name">Daniel</div>
+            <img class="p-top" src="../assets/portraits/daniel_kampagnons_2_cutout.webp" alt="" aria-hidden="true">
+          </div>
+          <span class="p-role">Kampagnons · Inhaber</span>
+          <h3>Daniel Wagner</h3>
+          <p>Macht seit fünfunddreissig Jahren Marketing und Kommunikation. Notorisch unzufrieden mit dem Status quo – und genau deshalb gut.</p>
+        </div>
+        <!-- Sven: Bild von webtie.ch, 445 px im Quadrat. Kein Cutout, deshalb
+             liegt der Vorname vor dem Bild statt dahinter. Beides fällt weg,
+             sobald ein Hochformat von ihm da ist. Rechts-Gate: sein OK für
+             die Verwendung fehlt noch. -->
+        <div class="person" data-r="4">
+          <div class="person-figure">
+            <!-- Porträt vom 02.09.2026, 512x512 auf hellgrauem Grund - löst
+                 das alte 445er von webtie.ch ab.
+                 Farbe raus: die beiden anderen Porträts sind schwarzweiss.
+                 Der Name sitzt unten auf dem dunklen Shirt statt oben - ohne
+                 Cutout läge er sonst auf Svens Gesicht, und auf dem hellen
+                 Grund wäre Lime als Schrift ohnehin unlesbar. Beides fällt
+                 weg, sobald ein freigestelltes Hochformat da ist. -->
+            <img class="p-base" src="../assets/portraits/sven_webtie.png" alt="Sven Humbel" style="filter:grayscale(1) contrast(1.06);">
+            <div class="p-name" style="top:auto; bottom:4%;">Sven</div>
+          </div>
+          <span class="p-role">webtie · Frontend &amp; Entwicklung</span>
+          <h3>Sven Humbel</h3>
+          <p>Unser Partner für Websites. Er übernimmt Technik, Umsetzung und Betrieb. Für euch bleibt es trotzdem eine Ansprechperson.</p>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============================================================
+         11 · t-track – Track Record
+         Zwei Bahnen, eine pro Person. Der Nachweis, dass Erfahrung
+         gelaufen und nicht behauptet ist.
+         ============================================================ -->
+    <section class="slide t-track" data-title="Track Record">
+      <div class="eyebrow" data-r="1">02 – Fünfundvierzig Jahre Erfahrung an einem Tisch</div>
+      <div class="tracks">
+        <div>
+          <div class="track-head" data-r="2"><h3>Simon Gantner</h3><span class="years">10 JAHRE</span></div>
+          <div class="track-list">
+            <div class="track-step" data-r="3"><span class="when">2016–2019</span><div><h4>Projektleitung und Beratung</h4><p>Bei Kampagnons: Mitarbeiterkommunikation, Projektleitung, Beratung. Parallel Produzent bei Smovie Film.</p></div></div>
+            <div class="track-step" data-r="4"><span class="when">2020–2021</span><div><h4>Digital Marketing</h4><p>Consultant bei glaswerk: Inbound-Kampagnen und digitale Beratung für B2B und B2C.</p></div></div>
+            <div class="track-step is-peak" data-r="5"><span class="when">Seit 2021</span><div><h4>Helvetia – Communications &amp; Content Marketing</h4><p>Interne und externe Kommunikationsverantwortung für einen Bereich mit 1’000 Mitarbeitenden: Krisenkommunikation, Reputation, Medien, Content – und Kampagnen bis zu Kundenschreiben an über zwei Millionen Menschen.</p></div></div>
+            <div class="track-step" data-r="5"><span class="when">2016–2025</span><div><h4>Bachelor und Master</h4><p>BSc und MAS Business Communications an der HWZ, stets berufsbegleitend, beide mit Auszeichnung. Masterarbeit über künstliche Intelligenz in der Unternehmenskommunikation.</p></div></div>
+            <div class="track-step" data-r="6"><span class="when">Heute</span><div><h4>Inhaber und Geschäftsführer, Kampagnons</h4><p>Folgt jetzt als frischgebackener Unternehmer dem, was ihn ohnehin nicht loslässt: KMU in Branding, Marketing und Kommunikation zu begleiten.</p></div></div>
+          </div>
+        </div>
+        <div>
+          <div class="track-head" data-r="2"><h3>Daniel Wagner</h3><span class="years">35 JAHRE</span></div>
+          <div class="track-list">
+            <div class="track-step" data-r="3"><span class="when">1990–1993</span><div><h4>Journalismus</h4><p>Redaktor bei der Lokalinfo AG, journalistische Gesamtverantwortung für die Stadtzürcher Wochenzeitung «Altstadt».</p></div></div>
+            <div class="track-step" data-r="4"><span class="when">1994–2006</span><div><h4>Sportmarketing, international</h4><p>Partner bei Iguana Think Tank: Konzeption, Vermarktung und Organisation nationaler und internationaler Sportveranstaltungen.</p></div></div>
+            <div class="track-step" data-r="5"><span class="when">2007–2017</span><div><h4>Eigene Kommunikationsberatung</h4><p>Vollservice für Unternehmens- und Marketingkommunikation: Beratung, Konzept, Text, Projektmanagement.</p></div></div>
+            <div class="track-step" data-r="5"><span class="when">2016–2025</span><div><h4>Bewegtbild und Lehre</h4><p>Co-Gründer von Smovie Film und Smart Rebels; Dozent für Video- und Social-Media-Content an HWZ und ZHAW.</p></div></div>
+            <!-- Kein Getränk in dieser Zeile. Erst stand hier «mit denen er
+                 auch ein Bier trinken würde» - falsch, Dani trinkt keines.
+                 Die Korrektur auf Negroni (so hält es danielwagner.ch) hat
+                 Simon am 17.08.2026 auch gestrichen: die Station soll sagen,
+                 was er macht, nicht wie er wirkt. Nicht wieder einsetzen. -->
+            <div class="track-step is-peak" data-r="6"><span class="when">Heute</span><div><h4>Inhaber, Kampagnons</h4><p>Dazu danielwagner.ch und Mitgründer von MAD/SAINTS.</p></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============================================================
+         12 · t-services – Was wir können
+         Drei Disziplinen, jede mit ihren Unterdisziplinen. Die Linie
+         oben zieht sich auf. Nie mehr als sechs pro Spalte, sonst
+         wird aus dem Angebot eine Preisliste.
+         ============================================================ -->
+    <section class="slide t-services" data-title="Was wir können">
+      <div class="eyebrow" data-r="1">03 – Was wir können</div>
+      <h1 data-r="2" data-rise style="margin-bottom:12px;"><span class="hl">Drei Disziplinen</span>, ein Tisch.</h1>
+      <div class="services">
+        <div class="service" data-r="3">
+          <span class="num">01</span>
+          <h3>Branding</h3>
+          <ul>
+            <li>Positionierung</li>
+            <li>Markenstrategie</li>
+            <li>Naming und Claim</li>
+            <li>Corporate Design</li>
+            <li>Bildwelt und Film</li>
+            <li>Markenführung</li>
+          </ul>
+        </div>
+        <div class="service" data-r="4">
+          <span class="num">02</span>
+          <h3>Marketing</h3>
+          <ul>
+            <li>Marketingstrategie</li>
+            <li>Kampagnen mit Behavioral Economics</li>
+            <li>Content und Social Media</li>
+            <li>Performance und Ads</li>
+            <li>Website und SEO</li>
+            <li>E-Mail und CRM</li>
+          </ul>
+        </div>
+        <div class="service" data-r="5">
+          <span class="num">03</span>
+          <h3>Kommunikation</h3>
+          <ul>
+            <li>Unternehmenskommunikation</li>
+            <li>Interne Kommunikation</li>
+            <li>Medienarbeit und PR</li>
+            <li>Krisenkommunikation</li>
+            <li>Reputationsmanagement</li>
+            <li>Change-Kommunikation</li>
+          </ul>
+        </div>
+      </div>
+      <!-- Das Mechanik-Bild unserer Arbeitsweise: links wirft die
+           Maschine Menge aus, in der Mitte entscheidet ein Mensch,
+           rechts geht nur raus, was er verantwortet. Deshalb laufen
+           rechts weniger Punkte und langsamer. -->
+      <div class="aiflow gate-sub" data-r="6">
+        <div class="aiflow-side">
+          <span class="lab">KI liefert</span>
+          <span class="val">Breite, Qualität, Tempo</span>
+          <div class="aiflow-lane">
+            <i style="--fd:0ms"></i><i style="--fd:480ms"></i><i style="--fd:960ms"></i><i style="--fd:1440ms"></i>
+          </div>
+        </div>
+        <div class="aiflow-gate has-sub"><span>Experten kuratieren, verbessern, entscheiden<em>Symbiose von Mensch und KI</em></span></div>
+        <div class="aiflow-side is-right">
+          <span class="lab">Zu euch geht</span>
+          <span class="val">nur das richtig Gute</span>
+          <div class="aiflow-lane is-out">
+            <i style="--fd:1700ms"></i><i style="--fd:3000ms"></i>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============================================================
+         13 · t-split – Unsere KI-Agentur
+         Die Auflösung zur Mechanik-Grafik auf der Folie davor. Sie
+         gehört zum Kapitel «Wie wir arbeiten» und steht trotzdem
+         hier: erst zeigt Folie 12 unten, DASS zwischen KI und Kunde
+         ein Mensch steht, dann erklärt diese Folie, warum.
+
+         Die drei Zahlen sind mit Absicht so gewählt. «18 Experten»
+         allein wäre Leistung in Personaleinheiten - der Kunde rechnet
+         sofort achtzehn Mann Output gegen zwei Mann Kosten. Die «2»
+         steht deshalb daneben und nimmt die Rechnung vorweg.
+
+         Verbot: keine Werkzeug- und Modellnamen. Sobald ein
+         Produktname fällt, kauft der Kunde ein Abonnement statt
+         einer Agentur.
+         ============================================================ -->
+    <section class="slide t-split" data-title="Unsere KI-Agentur">
+      <div class="eyebrow" data-r="1">04 – Wie wir arbeiten</div>
+      <div class="split">
+        <div>
+          <h1 data-r="2" data-rise>KI ist bei uns kein Buzzword,<br>sondern ein durchdachtes<br><span class="hl">System</span>.</h1>
+          <p class="kicker" data-r="3" style="margin-top:40px; opacity:0.85;">Der Unterschied ist nicht, dass wir KI benutzen. Das tun inzwischen alle. Bei uns arbeitet ein ganzes Team spezialisierter Agenten: einer sucht die Idee, einer den Fehler, einer den Widerspruch. Wir als Experten sitzen mittendrin, kuratieren, verbessern und entscheiden. Trotz all dem: Das Handwerk bleibt entscheidend, denn die KI merkt nicht, wann sie danebenliegt. Und alles kann KI noch lange nicht.</p>
+          <!-- Hier stand bis zum 17.08.2026 der Absatz «Das System liefert
+               die Auswahl. Der Mensch entscheidet. …». Simon hat ihn
+               gestrichen - die Headline sagt dasselbe in vier Wörtern, und
+               der Absatz hat es nochmal erklärt.
+               Der Satz bleibt trotzdem Pflicht, nur gesprochen: die
+               Preis-Übergabe verlangt ihn, weil das Argument sonst zwei
+               Hälften hat, die sich gegenseitig aushebeln.
+               → Kampagnons/pricing/UEBERGABE-praesentation.md, Abschnitt 3 -->
+        </div>
+        <dl class="facts">
+          <div class="fact" data-r="4"><dt>Experten im System</dt><dd><span data-count="18">18</span></dd></div>
+          <div class="fact" data-r="5"><dt>Trainierte Skills, auf die sie zugreifen</dt><dd><span data-count="100" data-suffix="+">100+</span></dd></div>
+          <!-- «davon» stand hier bis zum 05.09.2026 und bezog sich auf die 18
+               Experten in der Zeile direkt darüber. Seit die Skills dazwischen
+               stehen, zeigte es auf die falsche Zahl - fünf von hundert statt
+               fünf von achtzehn. Weg damit; die Zeile trägt auch allein. -->
+          <div class="fact" data-r="5"><dt>Prüfstationen, an denen Arbeit scheitert</dt><dd><span data-count="5">5</span></dd></div>
+          <div class="fact" data-r="6"><dt>Menschen, die dafür geradestehen</dt><dd><span data-count="2">2</span></dd></div>
+        </dl>
+      </div>
+    </section>
+
+
+    <!-- ============================================================
+         15 · t-bigbang – Exponentielle Kreativität
+         Der Ertrag der beiden Folien davor. Die Karte zeigt, WER im
+         Schwarm arbeitet - diese Folie zeigt, WAS das mit der
+         Kreativität macht: vor KI wächst sie linear, mit KI
+         exponentiell. Der Urknall am Ende der Kurve ist die
+         Kreativität selbst, nicht die Technik.
+
+         Die Achsen tragen mit Absicht keine Zahlen und keine
+         Einheiten. Eine Skala würde behaupten, wir hätten das
+         gemessen - haben wir nicht. Und sie darf nie zur
+         Aufwandsachse werden: hier steht Möglichkeit, nie Aufwand.
+
+         Verbot: keine dritte Kurve, kein Wettbewerber-Vergleich.
+         Zwei Linien sind das Argument, eine dritte ist eine Grafik.
+         ============================================================ -->
+    <section class="slide ink t-bigbang" data-title="Exponentielle Kreativität">
+      <div class="eyebrow" data-r="1">04 – Wie wir arbeiten</div>
+      <h1 data-r="2" data-rise style="margin-bottom:6px;"><span class="hl">Exponentielle</span> Kreativität. Wie ein Urknall.</h1>
+      <div class="bang" data-r="3">
+        <svg viewBox="0 0 1400 476" role="img" aria-label="Zwei Kurven: vor KI wächst Kreativität fast linear, mit KI exponentiell und endet in einem Urknall">
+          <g class="bang-axes">
+            <line x1="70" y1="420" x2="1340" y2="420"/>
+            <line x1="70" y1="20" x2="70" y2="420"/>
+            <text class="bang-ax" x="1340" y="452" text-anchor="end">ZEIT</text>
+            <text class="bang-ax" transform="translate(46,420) rotate(-90)">KREATIVE MÖGLICHKEITEN</text>
+          </g>
+          <path class="bang-line is-then" pathLength="1000" d="M 70 420 L 1290 368"/>
+          <path class="bang-line is-now" pathLength="1000" d="M 70.0 420.0 L 96.5 420.0 L 123.0 420.0 L 149.6 420.0 L 176.1 420.0 L 202.6 420.0 L 229.1 420.0 L 255.7 420.0 L 282.2 420.0 L 308.7 420.0 L 335.2 420.0 L 361.7 420.0 L 388.3 420.0 L 414.8 420.0 L 441.3 420.0 L 467.8 420.0 L 494.3 420.0 L 520.9 420.0 L 547.4 420.0 L 573.9 420.0 L 600.4 420.0 L 627.0 420.0 L 653.5 420.0 L 680.0 420.0 L 706.5 419.9 L 733.0 419.9 L 759.6 419.8 L 786.1 419.6 L 812.6 419.4 L 839.1 419.1 L 865.7 418.5 L 892.2 417.8 L 918.7 416.6 L 945.2 415.0 L 971.7 412.6 L 998.3 409.2 L 1024.8 404.5 L 1051.3 397.8 L 1077.8 388.6 L 1104.3 376.0 L 1130.9 358.9 L 1157.4 335.8 L 1183.9 304.8 L 1210.4 263.5 L 1237.0 209.0 L 1263.5 137.4 L 1290.0 44.0"/>
+          <text class="bang-lab is-then" x="1250" y="404" text-anchor="end">VOR KI</text>
+          <!-- «MIT KI» sitzt oben LINKS der Kurve, nicht neben ihrem
+               Anstieg. Mit Exponent 13 klebt die Kurve fast die ganze
+               Breite an der Achse und geht dann fast senkrecht hoch -
+               daneben ist kein Platz mehr, das Wort lag auf der Linie.
+               Oben links ist das Feld leer, und ausser der Lime-Kurve
+               ist dort nichts, was das Wort meinen könnte.
+               Die Urknall-Ringe wachsen auf Radius ~105 um (1290,44);
+               das Wortende bei x 1150 / y 112 liegt ausserhalb. -->
+          <text class="bang-lab is-now" x="1150" y="112" text-anchor="end">MIT KI</text>
+          <g class="bang-burst" transform="translate(1290,44)">
+            <circle class="bang-wave" style="--bd:1700ms" r="15"/>
+            <circle class="bang-wave" style="--bd:1880ms" r="15"/>
+            <circle class="bang-wave" style="--bd:2060ms" r="15"/>
+            <circle class="bang-core" r="13"/>
+          </g>
+        </svg>
+      </div>
+      <p class="kicker" data-r="4">Wir sind zwei kreative Vögel. Doch seit wir durchdacht mit KI arbeiten, wird aus jeder Idee ein ganzer Schwarm. Der Urknall ist und bleibt die Kreativität.</p>
+    </section>
+
+
+    <!-- ============================================================
+         16 · t-universe – Breiter
+         Erste der drei Folien «Breiter. Besser. Schneller.» Die
+         Reihenfolge ist gesetzt und gilt im ganzen Deck: schneller
+         kommt immer zuletzt. Wer Tempo zuerst nennt, verkauft
+         Geschwindigkeit - und Geschwindigkeit ist das billigste
+         unserer drei Argumente.
+
+         Der limefarbene Kreis ist auf beiden Seiten gleich gross.
+         Das ist der ganze Trick: derselbe Kreis, der vor zehn Jahren
+         die Grenze war, ist heute der Punkt in der Mitte.
+
+         Verbot: keine Zahl an den Ringen. Sobald dort «10×» steht,
+         ist es wieder eine Mengenaussage - und genau davon will
+         diese Folie weg.
+         ============================================================ -->
+    <section class="slide ink t-universe" data-title="Breiter">
+      <div class="eyebrow" data-r="1">04 – Breiter. Besser. Schneller.</div>
+      <h1 data-r="2" data-rise style="margin-bottom:4px;"><span class="hl">Breiter.</span> Aus einem Raum wird ein Universum.</h1>
+      <div class="universe" data-r="3">
+        <div class="uni-box">
+          <i class="uni-core is-closed"></i>
+        </div>
+        <div class="uni-box is-open">
+          <i class="uni-ring" style="--s:1.6;--o:0.46;--d:300ms"></i>
+          <i class="uni-ring" style="--s:2.2;--o:0.34;--d:520ms"></i>
+          <i class="uni-ring" style="--s:3.1;--o:0.24;--d:740ms"></i>
+          <i class="uni-ring" style="--s:4.3;--o:0.15;--d:960ms"></i>
+          <i class="uni-ring" style="--s:5.9;--o:0.09;--d:1180ms"></i>
+          <i class="uni-core"></i>
+        </div>
+        <span class="uni-lab">Vor zehn Jahren<small>Ein begrenzter Raum</small></span>
+        <span class="uni-lab">Heute<small>Unbegrenzte Kreativität</small></span>
+      </div>
+      <p class="kicker" data-r="4">Links seht ihr, was vor zehn Jahren unser ganzes Universum war. Wir fanden es damals ziemlich gross. Heute fangen wir dort an, wo wir früher aufgehört haben. Nicht weil uns mehr einfällt, sondern weil wir bauen können, was uns einfällt.</p>
+    </section>
+
+
+    <!-- ============================================================
+         17 · t-pick – Besser
+         Zweite der drei Folien. Sie zeigt, woher Qualität kommt,
+         wenn nicht aus mehr Zeit: aus Auswahl. Links gab es eine
+         Idee, und sie musste reichen. Rechts gibt es viele, und nur
+         eine geht raus.
+
+         Die Punkte sind bewusst ungezählt beschriftet. Eine Zahl
+         («40 Entwürfe») wäre eine Aufwandsangabe, und Aufwand
+         gehört in diesem Deck nirgends hin.
+         ============================================================ -->
+    <section class="slide t-pick" data-title="Besser">
+      <div class="eyebrow" data-r="1">04 – Breiter. Besser. Schneller.</div>
+      <h1 data-r="2" data-rise style="margin-bottom:4px;"><span class="hl">Besser.</span> Aus einer Idee wird die beste von vielen.</h1>
+      <div class="pick" data-r="3">
+        <div class="pick-box">
+          <div class="pick-grid" style="--c:3">
+            <i style="--d:340ms"></i> <i class="is-chosen" style="--d:640ms"></i> <i style="--d:460ms"></i>
+          </div>
+        </div>
+        <div class="pick-box">
+          <div class="pick-grid" style="--c:10">
+            <i style="--d:260ms"></i> <i style="--d:286ms"></i> <i style="--d:312ms"></i> <i style="--d:338ms"></i> <i style="--d:364ms"></i> <i style="--d:390ms"></i> <i style="--d:416ms"></i> <i style="--d:442ms"></i> <i style="--d:468ms"></i> <i style="--d:494ms"></i>
+            <i style="--d:520ms"></i> <i style="--d:546ms"></i> <i style="--d:572ms"></i> <i style="--d:598ms"></i> <i style="--d:624ms"></i> <i style="--d:650ms"></i> <i style="--d:676ms"></i> <i style="--d:702ms"></i> <i style="--d:728ms"></i> <i style="--d:754ms"></i>
+            <i style="--d:780ms"></i> <i style="--d:806ms"></i> <i style="--d:832ms"></i> <i style="--d:858ms"></i> <i style="--d:884ms"></i> <i style="--d:910ms"></i> <i class="is-chosen" style="--d:1500ms"></i> <i style="--d:962ms"></i> <i style="--d:988ms"></i> <i style="--d:1014ms"></i>
+            <i style="--d:1040ms"></i> <i style="--d:1066ms"></i> <i style="--d:1092ms"></i> <i style="--d:1118ms"></i> <i style="--d:1144ms"></i> <i style="--d:1170ms"></i> <i style="--d:1196ms"></i> <i style="--d:1222ms"></i> <i style="--d:1248ms"></i> <i style="--d:1274ms"></i>
+          </div>
+        </div>
+        <span class="uni-lab">Vor zehn Jahren<small>Wenige Ideen, eine musste funktionieren</small></span>
+        <span class="uni-lab">Heute<small>Die beste aus vielen</small></span>
+      </div>
+    </section>
+
+
+    <!-- ============================================================
+         18 · t-money – Schneller
+         Zwei Balken, gleiches Budget, verschiedener Output. Der
+         Vergleich ist die ganze Folie - deshalb keine Achse, keine
+         Skala, nur die beiden Längen zueinander.
+
+         Das Wort ist Output, nicht Ertrag. Ertrag ist Geld, das der
+         Kunde einnimmt - das können wir nicht versprechen. Output
+         ist, was auf seinem Tisch landet, und das können wir.
+
+         Verbot: keine Zahl ohne Herleitung in der Fusszeile - ausser
+         die Zahl ist erkennbar eine eigene Erfahrung und keine
+         Messung. Simons Entscheid vom 06.09.2026 zu «2-3×»: bleibt
+         ohne Fusszeile, weil es eine Schätzung aus der eigenen
+         Arbeit ist. Nicht nochmal aufmachen.
+         ============================================================ -->
+    <section class="slide ink t-money" data-title="Schneller">
+      <div class="eyebrow" data-r="1">04 – Breiter. Besser. Schneller.</div>
+      <h1 data-r="2" data-rise style="margin-bottom:8px;"><span class="hl">Schneller.</span> Aus gleichem Geld wird zwei- bis dreifacher Output.</h1>
+      <div class="money">
+        <div class="money-row" data-r="3" style="--d:200ms">
+          <span class="lab">Vor zehn Jahren<small>GLEICHES BUDGET</small></span>
+          <span class="money-bar" style="--w:30%"></span>
+          <span class="amt">1×</span>
+        </div>
+        <div class="money-row is-now" data-r="4" style="--d:700ms">
+          <span class="lab">Heute<small>GLEICHES BUDGET</small></span>
+          <span class="money-bar" style="--w:78%"></span>
+          <span class="amt">2–3×</span>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============================================================
+         KAPITEL 05 · t-chapter - Referenzen
+         Der einzige Kapiteltrenner im Deck, und das ist Absicht: Hier
+         kippt es von «wer wir sind» zu «was dabei herauskommt». Ein
+         Lesedokument braucht an dieser Stelle Luft, ein Vortrag nicht -
+         im Raum macht diese Pause der Vortragende.
+
+         Die Unterzeile behauptet eine Mischung aus Kampagnons- und
+         webtie-Arbeiten. Am 05.09.2026 war das noch eine Ankündigung,
+         weil nur Siato dahinterstand. Inzwischen tragen Reliag,
+         WSH-Support und NRG GYM den Satz - Gate erledigt. Fallen
+         diese drei je weg, fällt die Zeile mit. → Fakten-Gate
+         ============================================================ -->
+    <section class="slide ink t-chapter" data-title="Kapitel Referenzen">
+      <!-- Ohne die grosse Kapitelnummer. `t-chapter` bringt sie mit, und
+           in einem Deck mit sechs Trennern ist sie die Orientierung. Hier
+           gibt es nur diesen einen - dann verweist eine «05» auf ein
+           System, das der Leser nirgends sonst sieht, und wirkt wie ein
+           Rest aus einer anderen Vorlage.
+           Wieder einsetzen, sobald es Trenner für alle Kapitel gibt. -->
+      <h1 data-r="2" data-rise>Was wir für tolle Unternehmen schon alles umsetzen durften.</h1>
+      <p class="ch-sub" data-r="3">Eine Mischung aus Arbeiten von Kampagnons und von webtie.</p>
+    </section>
+
+
+    <!-- ============================================================
+         REFERENZ 01 · t-ref - Märlitheater Zürich
+         Das Grundgerüst der Referenzstrecke. Jede weitere Referenz
+         ist eine Kopie dieser Folie: Jahr, Disziplinen, ein Absatz,
+         das Zeichen der Kundin rechts.
+
+         Das Logo-Video liegt bewusst IM Deck-Ordner, nicht in
+         `Naturspur/assets/`. Dieser Ordner wird als Ganzes gehostet;
+         was ausserhalb liegt, fehlt beim Kunden.
+
+         Es ist einmal durch ffmpeg gelaufen: Das Weiss der Vorlage
+         ist auf `--paper` (#F0F0F0) heruntermultipliziert, deshalb
+         steht hier kein weisses Rechteck und die Folie braucht keine
+         Sonderfläche. Nebenbei fiel die Tonspur weg, die eine
+         Logo-Animation nicht braucht - 4,4 MB wurden zu 353 KB.
+         Der Befehl steht im CSS bei `.ref-fig`.
+
+         ⚠️ FAKTEN-GATE: 2016 bis heute sind ZEHN Jahre, nicht neun.
+         Der Augenzwinkerer kommt deshalb ohne Zahl aus. Wer eine
+         einsetzt, rechnet zuerst nach.
+         ============================================================ -->
+    <section class="slide t-ref" data-title="Referenz Märlitheater">
+      <div class="eyebrow" data-r="1">05 – Für wen wir arbeiten</div>
+      <div class="ref">
+        <div class="ref-body">
+          <h1 data-r="2" data-rise>Märlitheater Zürich</h1>
+          <div class="ref-tags" data-r="3"><span>Kampagnons</span><span>2016</span><span>Branding</span><span>Web</span></div>
+          <p data-r="4">Für das Märlitheater haben wir die ganze Marke neu gestaltet und die Website lanciert. Pro bono, und für damalige Verhältnisse eine richtig schöne Sache.</p>
+          <p class="ref-wink" data-r="5">Heute sieht die Seite leider nicht mehr aus wie damals. Der Kunde betreut sie seither selbst ;-)</p>
+          <a class="linkbtn is-lime" data-r="5" href="https://www.maerli-theater.ch" target="_blank" rel="noopener">maerli-theater.ch</a>
+        </div>
+        <div class="ref-fig is-logo" data-r="3">
+          <!-- Kein `autoplay`: Die Engine startet das Video, wenn die Folie
+               aktiv wird, und stellt es bei `prefers-reduced-motion` still.
+               Kein `loop`: Die Animation läuft einmal und bleibt auf dem
+               Logo stehen. Ein Logo, das sich alle sechs Sekunden neu
+               zusammensetzt, wird vom Beweis zur Zappelei.
+               `muted` ist Pflicht - die Datei hat eine Tonspur. -->
+          <video src="../assets/logos/maerlitheater-animation.mp4"
+                 poster="../assets/logos/maerlitheater-standbild.jpg"
+                 muted playsinline preload="auto"></video>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============================================================
+         REFERENZ 02 · t-ref - Monopol Colors
+         Zweite Folie im Referenz-Standard. Das Video steht im
+         Laptop, weil es eine Website zeigt.
+
+         Das Video LOOPT, anders als das Logo beim Märlitheater. Der
+         Unterschied ist der Job: Eine Logo-Animation hat ein Ende
+         und soll dort stehenbleiben. Ein Stimmungsfilm hat keines -
+         71 Sekunden schaut sowieso niemand am Stück, und ein Bild,
+         das nach einer Minute einfriert, sieht kaputt aus.
+
+         `preload="metadata"`, nicht `auto`: Die Datei wiegt 18 MB und
+         ist damit der schwerste Brocken im Deck. Beim Öffnen der
+         Präsentation wird nur der Kopf geladen, der Rest erst auf
+         dieser Folie.
+
+         RECHTS-GATE GESCHLOSSEN: Der Film läuft mit Ton, und die
+         Rechte an der Tonspur liegen bei Simon - bestätigt am
+         05.09.2026. Das gilt für DIESEN Film. Der offene
+         Musikrechte-Fall beim Digital Color Lab ist ein anderer und
+         bleibt offen.
+
+         ⚠️ FAKTEN-GATE: «Fislisbach» und «zehn Jahre» stammen aus
+         Simons Angabe vom 05.09.2026, nicht aus dem Dossier. Der
+         Kundenversteher (Monopol Colors) kennt beides nicht - dort
+         gehört es nachgetragen.
+         Die Adresse ist belegt, nicht geraten: monopol-colors.ch
+         steht fünfmal im Vault und antwortet mit 200 (geprüft am
+         05.09.2026, leitet auf /de/ weiter). Vor dem Versand noch
+         einmal klicken - ein toter Link auf einer Referenzfolie ist
+         schlimmer als gar keiner.
+         ============================================================ -->
+    <section class="slide t-ref" data-title="Referenz Monopol Colors">
+      <div class="eyebrow" data-r="1">05 – Für wen wir arbeiten</div>
+      <div class="ref">
+        <div class="ref-body">
+          <h1 data-r="2" data-rise>Monopol Colors</h1>
+          <div class="ref-tags" data-r="3"><span>Kampagnons</span><span>2010–2020</span><span>Branding</span><span>Marketing</span><span>Kommunikation</span><span>Mandat</span></div>
+          <p data-r="4">Zehn Jahre lang waren wir das Marketing- und Kommunikationsteam einer Farbenfabrik in Fislisbach: Monopol Colors. Die Marke war grau und blass, was für einen Farbenhersteller ein Problem ist. Wir haben ihr ein Gefühl gegeben und es «We live colors» genannt. Die Holi-Shootings waren die Idee, die Marke zu emotionalisieren, mit den Mitarbeitenden zusammen. Dazu kam alles Übrige: interne Kommunikation, Newsletter, Kampagnen. Die Website war für damalige Verhältnisse topmodern und richtig mutig.</p>
+          <p class="ref-wink" data-r="5">Gefilmt und geschnitten hat Simon selbst. Aufgehört haben wir nur, weil er zur Helvetia ging.</p>
+          <a class="linkbtn is-lime" data-r="5" href="https://www.monopol-colors.ch" target="_blank" rel="noopener">monopol-colors.ch</a>
+        </div>
+        <div class="ref-fig is-device" data-r="3">
+          <div class="laptop">
+            <div class="laptop-lid">
+              <div class="laptop-view">
+                <!-- `data-ton`: Die Engine versucht, das Video MIT Ton zu
+                     starten. `muted` steht trotzdem im Markup - es ist der
+                     Zustand vor dem ersten Skript-Zugriff, und wenn das
+                     JavaScript ausfällt, läuft lieber nichts als etwas
+                     Lautes, das sich nicht abstellen lässt. -->
+                <video src="../assets/works/monopol-holi.mp4"
+                       poster="../assets/works/monopol-holi-standbild.jpg"
+                       data-ton muted loop playsinline preload="metadata"></video>
+              </div>
+            </div>
+            <div class="laptop-foot"></div>
+            <button class="tonbtn" type="button" aria-pressed="false">Ton an</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+
+    <!-- ============================================================
+         REFERENZ · «We live colors», Vollbild
+         Der Zahler zur Geschichte auf der Folie davor. Dort wird das
+         Holi-Shooting erklärt, hier steht es. Ein Bild und drei Wörter,
+         sonst nichts - `t-full` bringt Überzeile, Lead, Script und
+         Tags mit, und alle vier bleiben hier leer. Die Folie ist eine
+         Pause, kein Argument.
+
+         Simons Vorgabe war «nach der Monopol-Slide». Sie steht direkt
+         hinter der Erzählung und vor dem Color Lab. Wer sie
+         verschieben will, verschiebt den ganzen <section>-Block.
+
+         `scrim light` statt des normalen Scrims: Das Bild ist warm und
+         hell, der volle Scrim würde die untere Hälfte zudecken. Die
+         leichte Fassung reicht für weisse Schrift und lässt die Farben
+         stehen - und um Farben geht es hier.
+
+         Das Original wog 39,8 MB (5568 x 3712, PNG). Hier liegt es als
+         JPG mit 2400 px Breite und 1,1 MB. Wer es ersetzt, rechnet es
+         genauso herunter: Ein Deck, das nicht lädt, zeigt gar nichts.
+
+         ⚠️ RECHTS-GATE: Auf dem Bild sind Menschen erkennbar,
+         mutmasslich Mitarbeitende von Monopol. Der Holi-Film auf der
+         Folie davor zeigt dieselben Leute, das Deck liegt auf einem
+         Server. Ob es dafür eine Einwilligung gibt, ist nicht geklärt -
+         für Bild UND Film dieselbe Frage.
+         ============================================================ -->
+    <section class="slide t-full" data-title="We live colors">
+      <div class="bg" style="background-image:url('../assets/works/monopol-holi-2018.jpg');"></div>
+      <div class="scrim light"></div>
+      <div class="content">
+        <h2 data-r="2" data-rise>We live colors.</h2>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         REFERENZ · Digital Color Lab
+         Der Prototyp steht als solcher da, das ist Simons Vorgabe und
+         es ist die stärkere Erzählung: Nicht «wir haben geliefert»,
+         sondern «wir bauen, statt Papier zu schreiben». Für ein
+         Gründungsduo, das gerade entscheidet, wem es glaubt, ist das
+         der Unterschied.
+
+         ⚠️ KUNDEN-GATE (Monopol Colors): Lionel Schlessinger weiss
+         nicht, dass der Prototyp existiert - er soll ihn fertig zu
+         sehen bekommen. Auf dieser Folie steht deshalb NICHT, dass er
+         ihn noch nicht kennt. «Bestellt hat das ihr CEO eigentlich
+         nicht» sagt genug und nimmt der Überraschung nichts.
+
+         ⚠️ «Voraussichtlicher Go-Live: Dezember» ist ein Plan, der von
+         jemandem abhängt, der noch nichts davon weiss. «Voraussichtlich»
+         trägt das - eine feste Zusage wäre hier falsch. Wer das Wort
+         streicht, verspricht etwas, das ihm nicht gehört.
+
+         ⚠️ Offener Punkt aus dem Dossier: Die Musikrechte am Klangbett
+         sind ungeklärt. Die App ist ohnehin öffentlich erreichbar, der
+         Link ändert daran nichts - aber der Fall bleibt offen.
+         ============================================================ -->
+    <section class="slide t-ref" data-title="Referenz Color Lab">
+      <div class="eyebrow" data-r="1">05 – Für wen wir arbeiten</div>
+      <div class="ref">
+        <div class="ref-body">
+          <h1 data-r="2" data-rise>Digital Color Lab</h1>
+          <div class="ref-tags" data-r="3"><span>Kampagnons</span><span>2026</span><span>Prototyp</span><span>Web</span></div>
+          <p data-r="4">Ein digitales Farblabor für Architekten: vier Fragen, und am Ende steht eine Wunschfarbe für eine metallische Fassade, die es vorher nicht gab. Ein Prototyp, auch für Monopol Colors. Mit Klang, weil Farbe nicht nur die Augen angeht. Bestellt hat das der CEO eigentlich nicht. Wir haben es einfach gebaut, weil ein Konzeptpapier nie zeigt, was eine Idee kann, und weil solche Dinge mit KI heute in Tagen entstehen statt in Monaten. Voraussichtlicher Go-live: Dezember.</p>
+          <p class="ref-wink" data-r="5">Kopfhörer empfohlen.</p>
+          <a class="linkbtn is-lime" data-r="5" href="https://simongantner-netizen.github.io/monopol-digital-color-lab/" target="_blank" rel="noopener">Selbst ausprobieren</a>
+        </div>
+        <div class="ref-fig is-device" data-r="3">
+          <div class="laptop">
+            <div class="laptop-lid">
+              <div class="laptop-view"><img src="../assets/works/colorlab.png" alt="Digital Color Lab"></div>
+            </div>
+            <div class="laptop-foot"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         REFERENZ · Limeco
+         Die Brücke zu Naturspur, und der letzte Satz sagt es offen:
+         ein Betrieb, der eine Region nachhaltig entwickelt und das
+         erklären muss. Simons Hinweis vom 05.09.2026.
+
+         Der Disclaimer zur neusten Website steht als Fussnote, nicht
+         im Haupttext. Er gehört hin - eine Referenz, die fremde Arbeit
+         mitnimmt, fliegt beim ersten Nachfragen auf -, aber er ist
+         nicht die Aussage der Folie.
+
+         Jahreszahl: 2012, von Simon bestätigt am 05.09.2026. Kurz
+         stand hier 2022 - ein Vertipper, der die «über zehn Jahre»
+         zur Halbwahrheit gemacht hätte. Mit 2012 stimmen Chip und
+         Aussage zusammen: vierzehn Jahre, und die längste Beziehung
+         auf der ganzen Strecke.
+         ============================================================ -->
+    <section class="slide t-ref" data-title="Referenz Limeco">
+      <div class="eyebrow" data-r="1">05 – Für wen wir arbeiten</div>
+      <div class="ref">
+        <div class="ref-body">
+          <h1 data-r="2" data-rise>Limeco</h1>
+          <div class="ref-tags" data-r="3"><span>Kampagnons</span><span>2012–heute</span><span>Marke</span><span>Kommunikation</span><span>Film</span></div>
+          <p data-r="4">Limeco ist das Regiowerk fürs Limmattal: Abfall verwerten, Abwasser reinigen, erneuerbare Energie produzieren. Wer eine Region nachhaltig entwickelt, muss das auch erklären können, sonst bleibt es eine Absichtserklärung. Für Limeco arbeiten wir seit über zehn Jahren in unterschiedlichen Konstellationen: strategische und politische Kommunikation, darunter die Abstimmung über den Projektierungskredit für das neue Energiezentrum, dazu Social Media, interne Kommunikation und Branding.</p>
+          <p class="ref-wink" data-r="5">Die neuste Website hat eine andere Agentur entwickelt. Kampagnons hatte in dieser Zeit keine Ressourcen für grosse Webprojekte.</p>
+          <a class="linkbtn is-lime" data-r="5" href="https://www.limeco.ch/" target="_blank" rel="noopener">limeco.ch</a>
+        </div>
+        <div class="ref-fig is-device" data-r="3">
+          <div class="laptop">
+            <div class="laptop-lid">
+              <div class="laptop-view"><img src="../assets/works/limeco.png" alt="Limeco"></div>
+            </div>
+            <div class="laptop-foot"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         REFERENZ 03 · t-ref - Siato
+         Ersetzt seit dem 05.09.2026 die alte `t-case`-Fassung. Der
+         Fall hatte keine belegte Zahl, und `t-case` endet auf einer -
+         das ist der Grund, warum es `t-ref` überhaupt gibt.
+
+         Die Folie sagt ausdrücklich, dass das Projekt noch nicht
+         fertig ist. Simons Vorgabe, und sie ist richtig: Eine
+         Referenz, die einen Zwischenstand als Ergebnis verkauft,
+         fliegt beim ersten Klick auf. Umgekehrt ist ein offen
+         benannter Zwischenstand ein Vertrauensbeweis - besonders
+         gegenüber jemandem, der selbst gerade ein Projekt startet.
+
+         Der Knopf heisst «Live ansehen» und nicht wie bei den anderen
+         nach der Domain: Die Adresse ist eine GitHub-Vorschau, und
+         die gehört nicht als Wortmarke auf eine Folie.
+         Geprüft am 05.09.2026, Status 200.
+
+         ⚠️ Ein Bildschirmfoto zeigt keine Animationen. Der Text
+         behauptet aber genau die. Eine kurze Bildschirmaufnahme
+         wäre hier der ehrlichere Beleg - offen bei Simon.
+         ============================================================ -->
+    <section class="slide t-ref" data-title="Referenz Siato">
+      <div class="eyebrow" data-r="1">05 – Für wen wir arbeiten</div>
+      <div class="ref">
+        <div class="ref-body">
+          <h1 data-r="2" data-rise>Siato</h1>
+          <div class="ref-tags" data-r="3"><span>Kampagnons</span><span>2026</span><span>Branding</span><span>Web</span></div>
+          <p data-r="4">Siato ist eine Software fürs Lean Management, und wir bauen ihren neuen Auftritt. Fertig ist er nicht: Wir stecken mitten in der Konzeption. Zeigen wollen wir ihn trotzdem, weil die Seite schon vorführt, was heute an Animationen möglich ist, ohne dass eine Website davon langsam wird.</p>
+          <p class="ref-wink" data-r="5">Was ihr seht, ist der Stand von heute. Nächsten Monat steht dort etwas anderes.</p>
+          <a class="linkbtn is-lime" data-r="5" href="https://simongantner-netizen.github.io/siato-website/" target="_blank" rel="noopener">Live ansehen</a>
+        </div>
+        <div class="ref-fig is-device" data-r="3">
+          <div class="laptop">
+            <div class="laptop-lid">
+              <div class="laptop-view"><img src="../assets/works/siato.png" alt="Siato"></div>
+            </div>
+            <div class="laptop-foot"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============================================================
+         REFERENZ · Puro
+         Kein Link-Knopf: Das Restaurant ist zu, die Website weg. Die
+         Fussnote sagt das, statt es zu verschweigen - eine Referenz mit
+         totem Link wäre schlimmer.
+
+         Das Motiv steckt in einem fotografischen Mockup, das Simon am
+         06.09.2026 dazugelegt hat: eine Zürcher Hauswand mit zwei
+         Plakatkästen. Beide Platzhalterflächen sind exakt rechteckig
+         (270 x 386 px, gemessen statt geschätzt) und haben fast genau
+         das Seitenverhältnis des Motivs - deshalb genügte Einsetzen,
+         ohne perspektivische Verzerrung. Kontrolle danach: null
+         Platzhalter-Pixel übrig.
+         Kein gezeichneter Rahmen mehr darum: Das Foto zeigt schon einen
+         Plakatkasten, ein zweiter Rahmen wäre einer zu viel.
+
+         Es läuft über die ganze rechte Hälfte und randabfallend, auch
+         über das Lockup. Simons Entscheid vom 06.09.2026. Ein
+         Strassenbild in einer Kachel ist ein Bild von einer Strasse,
+         randabfallend ist es eine Strasse.
+
+         Beide Rahmen tragen ein eigenes Motiv, seit Simon am 06.09.2026
+         saubere Druckdaten nachgeliefert hat: links «Pssst!» mit dem
+         eingerollten Igel, rechts «Will you be my Valentine?». Zwei
+         Motive statt zweimal desselben zeigen, dass da eine Marke über
+         ein Jahr bespielt wurde und nicht ein einzelnes Plakat entstand.
+
+         Eingesetzt mit `ImageOps.fit`, also mittig beschnitten statt
+         verzerrt: Die Druckdaten haben 0.707, die Rahmen 0.699 - ein
+         Prozent Unterschied, das man dem Zuschnitt gibt und nicht der
+         Typografie.
+
+         Der Igel ist für dieses eine Publikum ein Glücksfall: Petra ist
+         Biologin. Nicht erwähnen, nur zeigen - wer den Zufall benennt,
+         nimmt ihm die Wirkung.
+
+         Zeitraum 2017-2019, von Simon korrigiert am 06.09.2026. Kurz
+         stand hier 2016-2018; dagegen sprach das Motiv selbst, das aus
+         dem Dezember 2019 stammt (Datei vom 04.12.2019, Schwestermotiv
+         mit «bis am 6. Januar 2020»). Mit 2017-2019 passt beides
+         zusammen.
+
+         KEIN Web-Knopf, und das ist Absicht: simplypuro.ch ist zwar
+         online (geprüft 06.09.2026, HTTP 200, mit der Abschieds-
+         meldung «letzter Servicetag 27. September 2025»), aber die
+         Seite zeigt nicht mehr die Marke, die wir bespielt haben.
+         Bis zum 06.09.2026 stand hier «die Website deshalb auch
+         nicht» - eine Begründung, die jeder in zehn Sekunden
+         widerlegt. Simons Entscheid: kein Knopf, aber auch keine
+         falsche Behauptung. → Fakten-Gate
+         ============================================================ -->
+    <section class="slide t-ref bild-halb" data-title="Referenz Puro">
+      <div class="eyebrow" data-r="1">05 – Für wen wir arbeiten</div>
+      <div class="ref">
+        <div class="ref-body">
+          <h1 data-r="2" data-rise>Puro</h1>
+          <div class="ref-tags" data-r="3"><span>Kampagnons</span><span>2017–2019</span><span>Branding</span><span>Werbung</span><span>Content</span></div>
+          <p data-r="4">Puro war ein Restaurant am Zürcher Paradeplatz. Wir haben die Marke bespielt: Werbung, Content, Newsletter.</p>
+          <p class="ref-wink" data-r="5">Das Restaurant gibt es nicht mehr.</p>
+        </div>
+        <div class="ref-fig" data-r="3">
+          <img src="../assets/works/puro-plakat.jpg" alt="Zwei Puro-Plakate an einer Zürcher Hauswand: «Pssst!» und «Will you be my Valentine?»">
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         REFERENZ · Reliag (webtie)
+         Der Text beschreibt nur, was auf ihrer eigenen Seite steht:
+         Gewerbeflächen, Kanton Aargau. Alles Weitere wäre erfunden.
+
+         Gebaut UND betreut, von Simon bestätigt am 05.09.2026 - das
+         gilt für alle drei webtie-Referenzen. Kurz stand dafür ein
+         eigener Chip «Betrieb» da; am 06.09.2026 wieder raus, auf
+         Simons Entscheid. Wer die Leistung ausweisen will, tut das im
+         Text, nicht mit einem vierten Chip: Die Chipzeile ist eine
+         Übersicht, keine Leistungsliste.
+         ============================================================ -->
+    <section class="slide t-ref" data-title="Referenz Reliag">
+      <div class="eyebrow" data-r="1">05 – Für wen wir arbeiten</div>
+      <div class="ref">
+        <div class="ref-body">
+          <h1 data-r="2" data-rise>Reliag</h1>
+          <div class="ref-tags" data-r="3"><span>webtie</span><span>Web</span></div>
+          <p data-r="4">Reliag vermittelt Gewerbeflächen im Kanton Aargau. Wer eine Halle mietet, unterschreibt für Jahre – die Seite muss deshalb zwei Dinge gleichzeitig leisten: Objekte zeigen und Vertrauen aufbauen.</p>
+          <a class="linkbtn is-lime" data-r="5" href="https://reliag.ch/" target="_blank" rel="noopener">reliag.ch</a>
+        </div>
+        <div class="ref-fig is-device" data-r="3">
+          <div class="laptop">
+            <div class="laptop-lid">
+              <div class="laptop-view"><img src="../assets/works/reliag.png" alt="Reliag"></div>
+            </div>
+            <div class="laptop-foot"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         REFERENZ · WSH-Support (webtie)
+         Grundlage ist ihre eigene Beschreibung: «Ihre Brücke zu
+         effizienter Sozialhilfe, individuell, effizient, unterstützend
+         ab Tag eins.» Nichts dazuerfunden.
+         Gebaut und betreut, siehe Reliag.
+         ============================================================ -->
+    <section class="slide t-ref" data-title="Referenz WSH-Support">
+      <div class="eyebrow" data-r="1">05 – Für wen wir arbeiten</div>
+      <div class="ref">
+        <div class="ref-body">
+          <h1 data-r="2" data-rise>WSH-Support</h1>
+          <div class="ref-tags" data-r="3"><span>webtie</span><span>Web</span></div>
+          <p data-r="4">WSH-Support springt dort ein, wo Sozialdienste unter Druck stehen: Fachleute auf Zeit, ab dem ersten Tag. Ein Angebot, das man erklären muss, bevor jemand zum Hörer greift.</p>
+          <a class="linkbtn is-lime" data-r="5" href="https://wsh-support.ch/" target="_blank" rel="noopener">wsh-support.ch</a>
+        </div>
+        <div class="ref-fig is-device" data-r="3">
+          <div class="laptop">
+            <div class="laptop-lid">
+              <div class="laptop-view"><img src="../assets/works/wsh.png" alt="WSH-Support"></div>
+            </div>
+            <div class="laptop-foot"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============================================================
+         REFERENZ · NRG GYM (webtie)
+         Ersetzt seit dem 06.09.2026 die AP-Beratung-Folie, auf Simons
+         Entscheid.
+
+         Alle Angaben stammen aus ihrer eigenen Seite, geprüft am
+         06.09.2026: «24/7» und «American Style» aus der
+         Seitenbeschreibung, die sechs Standorte und die Live-Auslastung
+         aus dem Bildschirmfoto. Nichts dazuerfunden.
+
+         Die Live-Auslastung ist der beste Satz auf der Folie, weil sie
+         etwas zeigt, was eine Website leisten kann und ein Prospekt
+         nicht. Für ein Gründungsduo, das über eine eigene Seite
+         nachdenkt, ist das anschaulicher als jedes Argument über
+         Technik.
+
+         Das Bild ist JPG statt PNG: als PNG wog es 1,1 MB, mehr als
+         jedes andere Bildschirmfoto im Deck.
+         ============================================================ -->
+    <section class="slide t-ref" data-title="Referenz NRG GYM">
+      <div class="eyebrow" data-r="1">05 – Für wen wir arbeiten</div>
+      <div class="ref">
+        <div class="ref-body">
+          <h1 data-r="2" data-rise>NRG GYM</h1>
+          <div class="ref-tags" data-r="3"><span>webtie</span><span>Web</span></div>
+          <p data-r="4">NRG GYM betreibt Fitnessstudios im amerikanischen Stil, rund um die Uhr offen, an sechs Standorten von Zürich bis Reinach. Die Seite zeigt für jedes Studio die Auslastung in Echtzeit. Wer um elf Uhr abends noch hin will, weiss vorher, ob eine Bank frei ist.</p>
+          <a class="linkbtn is-lime" data-r="5" href="https://www.nrggym.ch/" target="_blank" rel="noopener">nrggym.ch</a>
+        </div>
+        <div class="ref-fig is-device" data-r="3">
+          <div class="laptop">
+            <div class="laptop-lid">
+              <div class="laptop-view"><img src="../assets/works/nrggym.jpg" alt="NRG GYM"></div>
+            </div>
+            <div class="laptop-foot"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         NEU · Preisverweis statt Preis-Block
+         Simons Vorgabe: eine einzige Folie mit den High-Level-Zahlen,
+         das Detail liegt in der Offerte. Sieben Folien Preis-Haltung
+         braucht ein Deck, das jemand vorträgt - eines, das gelesen
+         wird, braucht die Summe und die Fussnote.
+
+         `cols-2` GIBT es im Standard - es ist am 03.09.2026 aus dem
+         Gesprächsdeck dorthin zurückgewandert. Hier stand es trotzdem
+         inline, weil dieses Deck eine veraltete Kopie der CSS hatte.
+         Seit dem 05.09.2026 ist die Kopie wieder auf Stand, und die
+         Folie benutzt die Klasse.
+
+         ⚠️ Die Zahlen müssen mit der Offerte A260005 übereinstimmen.
+         Wer eine ändert, ändert beide. Zwei Wahrheiten über den Preis
+         sind schlimmer als gar keine.
+
+         Die beiden Optionen (Claim 1’200, Fotoshooting 1’400) sind am
+         06.09.2026 von der Folie genommen worden, auf Simons Entscheid.
+         In der Offerte stehen sie weiter - dort gehören sie hin, weil
+         man dort abhaken kann. Auf einer Folie wären sie eine vierte
+         Zahl neben drei anderen und würden die Summe unscharf machen.
+         ============================================================ -->
+    <section class="slide t-offer" data-title="Was das kostet">
+      <div class="eyebrow" data-r="1">06 – Was das kostet</div>
+      <h1 data-r="2" data-rise style="margin-bottom:36px;">Unser Angebot für eure <span class="hl">Marke und Website</span>.</h1>
+      <div class="stoerer" data-r="6">Details in der separaten Offerte</div>
+      <div class="offer-grid cols-2">
+        <div class="offer-card" data-r="3">
+          <span class="tier">Block 1</span>
+          <h3>Marke</h3>
+          <div class="price">7’200<small> CHF</small></div>
+          <ul>
+            <li>Markenbild und Designroute</li>
+            <li>Logo und Signet</li>
+            <li>Designsystem: Farbe, Schrift, die Spur</li>
+            <li>Anwendungen: Karten, Briefpapier, Flyer, Fahrzeug</li>
+          </ul>
+        </div>
+        <div class="offer-card" data-r="4">
+          <span class="tier">Block 2</span>
+          <h3>Website</h3>
+          <div class="price">9’300<small> CHF</small></div>
+          <ul>
+            <li>Konzept und Struktur</li>
+            <li>Design für Desktop und Handy</li>
+            <li>Umsetzung und Craft CMS</li>
+            <li>Inhalt, Feinschliff und Go-live</li>
+          </ul>
+        </div>
+      </div>
+      <p class="small" data-r="5" style="margin-top:32px; text-align:center; font-size:26px;">
+        Zusammen <strong>16’500 CHF</strong>.
+      </p>
+      <p class="small" data-r="6" style="margin-top:14px; text-align:center; opacity:0.6;">
+        Kampagnons ist (noch) nicht mehrwertsteuerpflichtig. Jede Position im Detail steht in der Offerte.
+      </p>
+    </section>
+
+
+
+
+    <!-- ============================================================
+         SCHLUSS · t-statement - die Klammer
+         Die letzte inhaltliche Folie vor dem Abbinder. Sie schliesst,
+         was Folie 2 aufgemacht hat: dort «Ihr habt bei uns eine Spur
+         hinterlassen», hier läuft dieselbe Spur wieder ein und endet
+         im Wort.
+
+         «Zwei Unternehmer», nicht «Jungunternehmer»: Folie 9 sagt
+         von Dani «seit dreissig Jahren», Folie 10 verkauft
+         «Fünfundvierzig Jahre Erfahrung an einem Tisch». Die
+         Schlussfolie darf das nicht zurücknehmen. → Fakten-Gate
+
+         «Herzblut» steht im Skill `kampagnons-voice` auf der
+         Verbotsliste. Simon hat es am 06.09.2026 zweimal geschrieben,
+         nachdem es gemeldet war - damit ist es sein Entscheid.
+
+         Die Überschrift hat hier als einzige eine max-width, und
+         zwar dieselbe wie der Fliesstext (1250). Zwei Gründe: Ohne
+         sie lief die erste Zeile bis x 1498 und damit als Balken
+         quer über das Blatt. Und das Rückgrat der Spur hängt an der
+         breitesten Textzeile - ohne Deckel schob die Überschrift die
+         Kurve nach rechts unter das Lockup, auf 47 px.
+
+         Diese Folie trägt als einzige KEINEN Lime-Marker. Die Spur
+         läuft hier frei durch das Blatt, und zwei grüne Dinge auf
+         einer Folie wären eines zu viel. Simons Entscheid vom
+         06.09.2026: «es muss nichts mehr unterstrichen sein.»
+         ============================================================ -->
+    <section class="slide t-statement" data-title="Die Klammer" data-spur="ende">
+      <div class="eyebrow" data-r="1">Zum Schluss</div>
+      <h1 data-r="2" data-rise style="max-width:1250px;">Bis hierhin zieht sich eure Spur. Zwei Unternehmer wollen eure Marke zum Strahlen bringen.</h1>
+      <p class="kicker" data-r="3" style="max-width:1250px;">Wenn ihr euch für Kampagnons entscheidet, bekommt ihr Kreativität, die sich etwas traut, Herzblut für eure Sache und Können in beidem: Branding und Technik.</p>
+    </section>
+
+    <!-- ============================================================
+         51 · t-contact – Abbinder
+         Letzte Folie. Wer, wie erreichbar, was als Nächstes
+         passiert. Verbot: «demnächst» statt Datum.
+         ============================================================ -->
+    <section class="slide center t-contact ink" data-title="Abbinder">
+      <div class="eyebrow" data-r="1">Wie es weitergeht</div>
+      <h1 class="giant" data-r="2" data-rise>Und jetzt?</h1>
+      <dl class="contact-rows">
+        <div class="contact-row" data-r="3"><dt>Nächster Schritt</dt><dd>Die Offerte liegt bei. Schaut sie in Ruhe an, dann gehen wir sie gemeinsam in einem Teams-Call durch.</dd></div>
+        <div class="contact-row" data-r="4"><dt>Ansprechperson</dt><dd>Simon Gantner · Kampagnons, Zürich</dd></div>
+        <div class="contact-row" data-r="5"><dt>Kontakt</dt><dd><a href="tel:+41774384575">+41 77 438 45 75</a> · <a href="https://kampagnons.ch">kampagnons.ch</a></dd></div>
+      </dl>
+    </section>
+
+
+    <!-- ==== Chrome – bleibt am Ende der Bühne stehen ============== -->
+    <div class="cornermark" id="cornermark">
+      <img class="lg-pos" src="../assets/logo/kamp-logo.svg" alt="Kampagnons">
+      <img class="lg-neg" src="../assets/logo/kamp-logo-negative.svg" alt="Kampagnons">
+    </div>
+    <div class="hud"><div class="bar" id="bar"></div></div>
+    <div class="counter" id="counter">01 / 30</div>
+  </div>
+</div>
+<div class="hint" id="hint">←&nbsp;→&nbsp; BLÄTTERN &nbsp;·&nbsp; F &nbsp;VOLLBILD &nbsp;·&nbsp; O &nbsp;ÜBERSICHT</div>
+
+<script src="../deck/deck.js"></script>
+</body>
+</html>

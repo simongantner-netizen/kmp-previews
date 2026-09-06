@@ -1,0 +1,139 @@
+/* =========================================================
+   Kampagnons Präsentations-System – Tokens
+
+   Unterschied zum Marken-Design-System: Ein Deck rendert auf einer
+   festen Bühne von 1920x1080 und wird als Ganzes skaliert. Deshalb
+   sind hier alle Grössen absolut, nicht fluid. Kein clamp(), kein vw.
+   Wer clamp() in ein Deck schreibt, bekommt im PDF andere Grössen
+   als auf dem Bildschirm.
+   ========================================================= */
+
+:root {
+  /* ---- Bühne ---------------------------------------------------- */
+  --stage-w: 1920px;
+  --stage-h: 1080px;
+  --slide-pad-y: 96px;
+  --slide-pad-x: 120px;
+
+  /* ---- Schrift -------------------------------------------------- */
+  --font-sans: "Calibre", "Helvetica Neue", Arial, sans-serif;
+  /* Die Mono-Rolle behält ihren Namen, zeigt aber auf Calibre.
+     Tabular-Ziffern halten Nummern bündig - das reicht. */
+  --font-mono: "Calibre", "Helvetica Neue", Arial, sans-serif;
+
+  /* Deck-Skala. Absolut, für 1920px Bühnenbreite gerechnet. */
+  --fs-claim:   148px;  /* Leitidee, Closer - einmal pro Deck */
+  --fs-giant:   128px;  /* Statement, Insight */
+  --fs-hero:     96px;  /* Vollbild-Headline */
+  --fs-title:   112px;  /* Titelfolie - sie trägt die Folie allein */
+  --fs-h1:       72px;  /* Folien-Headline */
+  --fs-h2:       56px;  /* Zitat-Chip */
+  --fs-h3:       40px;  /* Karten- und Schritt-Titel */
+  --fs-h4:       30px;
+  --fs-kicker:   30px;  /* Absatz unter einer Headline */
+  --fs-lead:     26px;
+  --fs-body:     21px;
+  --fs-small:    18px;
+  --fs-meta:     15px;
+  --fs-eyebrow:  16px;
+  --fs-num:      14px;
+
+  --lh-display: 0.98;
+  --lh-tight:   1.05;
+  --lh-snug:    1.1;
+  --lh-body:    1.4;
+  --lh-loose:   1.5;
+
+  --tracking-tight:   -0.03em;
+  --tracking-snug:    -0.01em;
+  --tracking-normal:  0;
+  --tracking-eyebrow: 0.18em;
+  --tracking-meta:    0.04em;
+
+  /* ---- Farbe ---------------------------------------------------- */
+  /* Zweiton, strikt. Hierarchie entsteht über Grösse und Gewicht,
+     nicht über Grau. Wer eine dritte Tonstufe braucht, nimmt Alpha
+     auf Ink oder Paper - nie einen neuen Hex-Wert. */
+  --paper:        #F0F0F0;
+  --ink:          #0A0A0A;
+
+  --ink-80: rgba(10, 10, 10, 0.80);
+  --ink-55: rgba(10, 10, 10, 0.55);
+  --ink-45: rgba(10, 10, 10, 0.45);
+
+  --paper-92: rgba(240, 240, 240, 0.92);
+  --paper-65: rgba(240, 240, 240, 0.65);
+  --paper-55: rgba(240, 240, 240, 0.55);
+
+  --rule:         rgba(10, 10, 10, 0.12);
+  --rule-strong:  rgba(10, 10, 10, 0.28);
+  --rule-inverse: rgba(240, 240, 240, 0.18);
+
+  --border-hair: 1px solid var(--rule);
+  --border-rule: 1px solid var(--rule-strong);
+  --border-ink:  1px solid var(--ink);
+
+  /* Aurora - das Verlaufs-Element. Alle drei Farben sind immer da,
+     die Variante verschiebt nur, welche dominiert. */
+  --aurora-violet: #E8E0F5;
+  --aurora-peach:  #F8E5D5;
+  --aurora-lime:   #EBF0C8;
+
+  /* Lime ist keine Farbe zum Flächen-Füllen. Lime ist ein Marker.
+     Dicke em-basiert, damit sie mit jeder Schriftgrösse mitwächst;
+     Position 92% setzt die Bar auf die Baseline statt unter die
+     Line-Box - dadurch der Filzstift-Look statt Underline-Look. */
+  --lime:           #D4E84A;
+  --mark-thickness: 0.14em;
+  --mark-position:  92%;
+  --selection:      #D4E84A;
+
+  /* Die fünf Farben des Signets. Die letzten beiden sind die
+     Überlappungen und im Original als eigene Flächen eingebacken -
+     wer ein Signet statisch nachbaut, nimmt sie als Volltöne und
+     verlässt sich nicht auf einen Blend-Mode.
+     Die Einbettungs-Animation ist der begründete Sonderfall: dort
+     erzeugt ein multiply dieselben Töne live, weil sich die drei
+     Blätter beim Hereinfahren überlagern müssen.
+     multiply(lime, pink)   = #C14C1A
+     multiply(lime, purple) = #6B2F2E   */
+  --signet-purple: #7D34BC;
+  --signet-pink:   #E2556A;
+  --signet-lime:   #DAE53F;
+  --signet-orange: #C14C1A;
+  --signet-maroon: #6B2F2E;
+
+  /* Die Einbettungs-Animation nutzt genau diese drei Signet-Farben -
+     sie baut ja das Signet zusammen. Keine eigenen Werte dafür. */
+
+  /* Rakete für den KI-Fluss. Als Maske eingesetzt, nie als Bild -
+     so nimmt sie die Farbe der Folie an und funktioniert auf hell
+     wie auf dunkel. Fliegt nach rechts: Körper mit Spitze, zwei
+     Finnen hinten, kleiner Schub. */
+  --rakete: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 12'%3E%3Cpath d='M23 6C19 3.2 15 2.2 10 2.2L10 9.8C15 9.8 19 8.8 23 6Z'/%3E%3Cpath d='M10.2 2.7 4 0 8.2 3.5Z'/%3E%3Cpath d='M10.2 9.3 4 12 8.2 8.5Z'/%3E%3C/svg%3E");
+
+  /* ---- Raum ----------------------------------------------------- */
+  --space-1: 4px;   --space-2: 8px;    --space-3: 12px;  --space-4: 16px;
+  --space-5: 24px;  --space-6: 32px;   --space-7: 48px;  --space-8: 64px;
+  --space-9: 96px;  --space-10: 128px; --space-11: 192px;
+
+  --gap-cols: 56px;   /* 3-Spalter */
+  --gap-cols-4: 44px; /* 4-Spalter */
+
+  --radius-xs: 2px; --radius-sm: 4px; --radius-md: 8px; --radius-pill: 999px;
+
+  /* ---- Bewegung ------------------------------------------------- */
+  --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast:   140ms;
+  --dur-base:   260ms;
+  --dur-slide:  600ms;  /* Folienwechsel */
+  --dur-reveal: 700ms;  /* gestaffeltes Auftauchen */
+  --dur-aurora: 2400ms;
+  --dur-kenburns: 6s;   /* langsamer Zoom auf Vollbild-Folien */
+
+  /* Reveal-Takt. Sechs Stufen reichen; wer eine siebte braucht,
+     hat zu viel auf einer Folie. */
+  --r1: 120ms; --r2: 280ms; --r3: 440ms;
+  --r4: 600ms; --r5: 760ms; --r6: 920ms;
+}

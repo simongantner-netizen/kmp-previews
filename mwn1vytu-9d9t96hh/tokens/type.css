@@ -1,0 +1,121 @@
+/* =========================================================
+   Kampagnons Präsentations-System – Typografie
+   Die Klassen sind die Hierarchie. Wer font-size direkt ins
+   style-Attribut schreibt, umgeht das System.
+   ========================================================= */
+
+html { background: var(--paper); color: var(--ink); }
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  letter-spacing: var(--tracking-normal);
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: var(--selection); color: var(--ink); }
+
+h1, .h1, h2, .h2, h3, .h3, h4, .h4 {
+  font-family: var(--font-sans);
+  color: inherit;
+  margin: 0;
+  text-wrap: balance;
+}
+
+/* Die drei grossen Stufen. Claim kommt genau einmal pro Deck vor -
+   auf der Leitidee oder im Closer, nie auf beiden. */
+.claim { font-size: var(--fs-claim); font-weight: 900; line-height: 1.02; letter-spacing: var(--tracking-tight); }
+.giant { font-size: var(--fs-giant); font-weight: 700; line-height: var(--lh-display); letter-spacing: var(--tracking-tight); }
+.hero  { font-size: var(--fs-hero);  font-weight: 700; line-height: 1.0;  letter-spacing: var(--tracking-tight); }
+
+h1, .h1 { font-size: var(--fs-h1); font-weight: 700; line-height: var(--lh-tight); letter-spacing: var(--tracking-tight); }
+h2, .h2 { font-size: var(--fs-h2); font-weight: 700; line-height: var(--lh-tight); letter-spacing: var(--tracking-tight); }
+h3, .h3 { font-size: var(--fs-h3); font-weight: 700; line-height: var(--lh-snug);  letter-spacing: var(--tracking-snug); }
+h4, .h4 { font-size: var(--fs-h4); font-weight: 700; line-height: var(--lh-snug);  letter-spacing: var(--tracking-snug); }
+
+/* Kicker: der eine Absatz, der eine Headline erdet. Maximal drei
+   Zeilen - danach ist es keine Folie mehr, sondern ein Handout. */
+.kicker  { font-size: var(--fs-kicker); line-height: 1.35; font-weight: 400; max-width: 1250px; }
+.lead    { font-size: var(--fs-lead);   line-height: 1.35; font-weight: 400; }
+p, .body { font-size: var(--fs-body);   line-height: var(--lh-body); font-weight: 400; margin: 0; }
+.small   { font-size: var(--fs-small);  line-height: var(--lh-loose); }
+
+.eyebrow {
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  margin-bottom: 40px;
+}
+
+/* Mono-Rolle = Calibre Medium mit Tabular-Ziffern. Für alles, was
+   gezählt, nummeriert oder als Label gelesen wird. */
+code, kbd, pre, samp, .mono, .meta, .num {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  letter-spacing: var(--tracking-meta);
+}
+.meta { font-size: var(--fs-meta); letter-spacing: var(--tracking-eyebrow); }
+.num  { font-size: var(--fs-num);  opacity: 0.5; }
+
+hr { border: 0; border-top: var(--border-hair); margin: var(--space-6) 0; }
+
+/* ---- Lime-Marker ----------------------------------------------------
+   Ein Keyword pro Folie. Nicht pro Absatz, pro Folie. Zwei Marker
+   auf einer Folie heben sich gegenseitig auf.
+   -------------------------------------------------------------------- */
+.hl, mark.hl, a {
+  background: transparent;
+  color: inherit;
+  text-decoration: none;
+  background-image: linear-gradient(var(--lime), var(--lime));
+  background-repeat: no-repeat;
+  background-size: 100% var(--mark-thickness);
+  background-position: 0 var(--mark-position);
+  padding: 0 0.02em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+a { transition: background-size var(--dur-base) var(--ease-out); }
+a:hover { background-size: 100% 0.3em; }
+
+/* ---- Aurora ---------------------------------------------------------
+   Weiche Radials, faden bei ~70% aus. Auf Titel-, Brücken- und
+   Bedingungs-Folien - nicht auf Folien mit Karten oder Tabellen,
+   dort frisst der Verlauf die Kanten.
+   -------------------------------------------------------------------- */
+.aurora { position: relative; background-color: var(--paper); isolation: isolate; }
+.aurora::before {
+  content: "";
+  position: absolute; inset: 0; z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 60% at 18% 22%, var(--aurora-violet) 0%, rgba(232,224,245,0) 70%),
+    radial-gradient(55% 55% at 82% 18%, var(--aurora-peach)  0%, rgba(248,229,213,0) 70%),
+    radial-gradient(65% 65% at 60% 92%, var(--aurora-lime)   0%, rgba(235,240,200,0) 72%);
+  transition: opacity var(--dur-aurora) var(--ease-in-out), filter var(--dur-aurora) var(--ease-in-out);
+}
+.aurora[data-aurora="violet"]::before {
+  background:
+    radial-gradient(80% 80% at 25% 25%, var(--aurora-violet) 0%, rgba(232,224,245,0) 72%),
+    radial-gradient(45% 45% at 85% 20%, var(--aurora-peach)  0%, rgba(248,229,213,0) 70%),
+    radial-gradient(45% 45% at 70% 95%, var(--aurora-lime)   0%, rgba(235,240,200,0) 72%);
+}
+.aurora[data-aurora="peach"]::before {
+  background:
+    radial-gradient(45% 45% at 15% 25%, var(--aurora-violet) 0%, rgba(232,224,245,0) 70%),
+    radial-gradient(85% 85% at 80% 22%, var(--aurora-peach)  0%, rgba(248,229,213,0) 72%),
+    radial-gradient(45% 45% at 60% 95%, var(--aurora-lime)   0%, rgba(235,240,200,0) 72%);
+}
+.aurora[data-aurora="lime"]::before {
+  background:
+    radial-gradient(45% 45% at 18% 20%, var(--aurora-violet) 0%, rgba(232,224,245,0) 70%),
+    radial-gradient(45% 45% at 85% 22%, var(--aurora-peach)  0%, rgba(248,229,213,0) 70%),
+    radial-gradient(85% 85% at 55% 90%, var(--aurora-lime)   0%, rgba(235,240,200,0) 74%);
+}

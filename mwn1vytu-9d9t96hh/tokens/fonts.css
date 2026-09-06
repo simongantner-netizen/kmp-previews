@@ -1,0 +1,31 @@
+/* =========================================================
+   Kampagnons Präsentations-System – Schriften
+   Calibre, getrimmt auf die fünf Schnitte, die ein Deck braucht.
+   Mehr Schnitte heisst nur längere Ladezeit, nicht mehr Hierarchie.
+
+   `font-display: block`, NICHT `swap`. Bis zum 06.09.2026 stand hier
+   `swap`, und das heisst wörtlich: zeig sofort die Ersatzschrift und
+   tausche sie später aus. Genau das hat Simon gesehen - für einen
+   Moment Helvetica, dann Calibre. Bei einer Website ist `swap` richtig,
+   weil Text sofort lesbar sein muss. Ein Deck hat keinen Leser, der
+   auf eine Zeile wartet: Es wird aufgeschlagen und angeschaut, und
+   eine Überschrift, die kurz in der falschen Schrift dasteht, ist
+   schlimmer als eine, die einen Wimpernschlag später kommt.
+
+   `block` hält den Text bis zu drei Sekunden zurück und fällt erst
+   dann auf die Ersatzschrift. Die Dateien liegen im selben Ordner -
+   drei Sekunden werden nie erreicht.
+
+   ⚠️ Das allein reicht nicht. Die Schriften hängen am Ende einer
+   @import-Kette und werden deshalb spät entdeckt. Jedes Deck lädt sie
+   im <head> mit `rel="preload"` vor - ohne das verschiebt `block` den
+   Flash nur in eine kurze Leere. Siehe starter/index.html.
+
+   ⚠️ Und sie sind OTF, rund 50 KB pro Schnitt. WOFF2 wäre etwa ein
+   Drittel davon. Auf dem Rechner lag kein Konverter; offen. */
+
+@font-face { font-family: "Calibre"; font-style: normal; font-weight: 400; src: url("../assets/fonts/Calibre-Regular.otf")  format("opentype"); font-display: block; }
+@font-face { font-family: "Calibre"; font-style: normal; font-weight: 500; src: url("../assets/fonts/Calibre-Medium.otf")   format("opentype"); font-display: block; }
+@font-face { font-family: "Calibre"; font-style: normal; font-weight: 600; src: url("../assets/fonts/Calibre-Semibold.otf") format("opentype"); font-display: block; }
+@font-face { font-family: "Calibre"; font-style: normal; font-weight: 700; src: url("../assets/fonts/Calibre-Bold.otf")     format("opentype"); font-display: block; }
+@font-face { font-family: "Calibre"; font-style: normal; font-weight: 900; src: url("../assets/fonts/Calibre-Black.otf")    format("opentype"); font-display: block; }

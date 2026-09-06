@@ -1,0 +1,327 @@
+/* =========================================================
+   Kampagnons Präsentations-System – Bewegung
+
+   Die Regel dahinter: Bewegung erklärt, wo etwas herkommt. Sie
+   verziert nicht. Deshalb kommt alles aus derselben Richtung, in
+   derselben Kurve, im selben Takt - und nur der Marker und die
+   Zahlen dürfen sich anders benehmen, weil sie etwas anderes sind.
+
+   Vier Werkzeuge:
+     data-r="1..6"   Reveal-Takt, gilt für jedes Element
+     data-rise       Wort-für-Wort aus der Maske - für Headlines
+     .hl             Lime-Marker zeichnet sich selbst
+     data-count      Zahl zählt hoch
+   ========================================================= */
+
+/* Der Takt als Variable, damit auch Pseudo-Elemente ihn kennen. */
+[data-r="1"] { --d: var(--r1); }
+[data-r="2"] { --d: var(--r2); }
+[data-r="3"] { --d: var(--r3); }
+[data-r="4"] { --d: var(--r4); }
+[data-r="5"] { --d: var(--r5); }
+[data-r="6"] { --d: var(--r6); }
+.active [data-r] { transition-delay: var(--d, 0ms); }
+
+/* ---- Richtungsbewusster Folienwechsel --------------------------
+   Vorwärts kommt die Folie von unten, rückwärts von oben. Ohne das
+   fühlt sich Zurückblättern an wie ein Fehler. */
+.stage.back .slide           { transform: translateY(-14px); }
+.stage.back .slide.active    { transform: translateY(0); }
+.stage.back [data-r]         { transform: translateY(-22px); }
+.stage.back .active [data-r] { transform: translateY(0); }
+
+/* ---- Wort-für-Wort aus der Maske -------------------------------
+   Für Headlines. Jedes Wort sitzt in einem überlaufenden Kästchen
+   und fährt von unten herein. Das ist der Effekt, der ein Deck
+   teuer aussehen lässt - deshalb sparsam: eine Headline pro Folie,
+   nicht jeder Absatz.
+   Die Wörter werden von deck.js eingepackt.  */
+[data-rise] { opacity: 1 !important; transform: none !important; }
+
+/* Die Maske braucht oben MEHR Luft als unten. Die Deck-Zeilenhöhen
+   sind eng (0.98 bei --lh-display), die Schrift ragt mit Punkten,
+   Umlauten und Versalien über die Zeilenbox hinaus - ohne Zugabe
+   köpft overflow: hidden die i-Punkte, das Ü und die ä-Punkte.
+
+   0.50em OBEN, und die Zahl ist gemessen, nicht geschätzt.
+
+   Zweimal ist hier schon zu knapp gerechnet worden: erst köpfte es
+   die i-Punkte, dann - nach der Korrektur auf 0.26em - die Punkte
+   auf dem ä in «Gefährten». Der Grund, warum die naheliegende
+   Rechnung danebenliegt: die Schriftmetrik sagt, das höchste Zeichen
+   (Ä) rage nur 0.19em über die Zeilenbox. Im Layout sind es
+   tatsächlich rund 0.34em, weil `.wi` als inline-block eine eigene
+   Zeilenbox aufmacht und der halbe Durchschuss nicht dort sitzt, wo
+   die Metrik ihn vermuten lässt. Wer das nachrechnet statt nachmisst,
+   landet wieder bei 0.26em.
+
+   0.50em ist deshalb bewusst mehr als nötig. **Nicht kürzen.** Oben
+   ist die Zugabe gefahrlos, weil das Wort von UNTEN einfährt - mehr
+   Kopfraum zeigt nie etwas zu früh.
+
+   UNTEN dagegen ist 0.08em eine harte Obergrenze, und die ist nicht
+   frei gewählt: Das Wort startet bei translateY(110%), liegt also um
+   1.122em tiefer als in Ruhe. Verdeckt ist es nur, solange die
+   Maskenunterkante darüber bleibt - also bei padding-bottom bis
+   0.10em. Wer hier aufmacht, um Unterlängen zu retten, lässt beim
+   Blättern die Oberkante jedes Wortes vorblitzen. Unterlängen
+   brauchen es auch nicht: g, j, p, y und der Q-Schwanz liegen laut
+   Messung alle innerhalb der Zeilenbox.
+
+   SEITLICH 0.06em, und das ist der Fehler, der dreimal überlebt hat.
+
+   Die Maske schneidet in ALLE vier Richtungen. Zweimal ist hier nur
+   die Oberkante nachgebessert worden, weil oben geklagt wurde - und
+   der eigentliche Beschnitt sass rechts. Gemessen am 17.08.2026 über
+   alle Wörter beider Decks: oben 0 Fälle, unten 0, **rechts 56 von
+   117**, links 1.
+
+   Die Ursache ist die negative Laufweite. `--tracking-tight` ist
+   -0.03em, und CSS legt den Buchstabenabstand HINTER jeden Buchstaben,
+   auch hinter den letzten. Der Inline-Block ist dadurch schmaler als
+   das Wort, das er enthält: bei 112px fehlen 3.36px Vorschub, wovon
+   die Seitenlage des letzten Buchstabens das meiste auffängt - übrig
+   bleiben bis zu 1.5px, die `overflow: hidden` wegschneidet. Bei einem
+   runden Buchstaben wie e, o oder s sieht man die abgeflachte Kante
+   sofort; bei l oder t fällt derselbe Beschnitt niemandem auf.
+
+   Links trifft es Wörter, deren erster Buchstabe nach links ausholt
+   (j, das schliessende Anführungszeichen).
+
+   Seitliche Zugabe ist gefahrlos: das Wort fährt von UNTEN ein, die
+   Seiten verdecken nie etwas. 0.06em ist rund das Vierfache des
+   gemessenen Bedarfs - **nicht kürzen.**
+
+   MERKREGEL für das nächste Mal: Wenn hier etwas beschnitten aussieht,
+   werden ALLE VIER Kanten gemessen, nicht die, über die geklagt wird. */
+[data-rise] .w {
+  display: inline-block; overflow: hidden; vertical-align: bottom;
+  padding-top: 0.50em;    margin-top: -0.50em;
+  padding-bottom: 0.08em; margin-bottom: -0.08em;
+  padding-left: 0.06em;   margin-left: -0.06em;
+  padding-right: 0.06em;  margin-right: -0.06em;
+}
+[data-rise] .wi {
+  display: inline-block;
+  transform: translateY(110%) rotate(2deg);
+  opacity: 0;
+  transition: transform 900ms var(--ease-out), opacity 600ms var(--ease-out);
+  transition-delay: calc(var(--d, 0ms) + var(--wd, 0ms));
+}
+.active [data-rise] .wi { transform: translateY(0) rotate(0deg); opacity: 1; }
+.stage.back [data-rise] .wi { transform: translateY(-110%) rotate(-2deg); }
+.stage.back .active [data-rise] .wi { transform: translateY(0) rotate(0deg); }
+
+/* ---- Der Marker zeichnet sich selbst ---------------------------
+   Lime läuft von links ein, nachdem das Wort steht. Genau ein
+   Marker pro Folie - zwei heben sich gegenseitig auf. */
+.slide .hl {
+  background-size: 0% var(--mark-thickness);
+  transition: background-size 820ms var(--ease-out);
+  transition-delay: calc(var(--d, 0ms) + 620ms);
+}
+.slide.active .hl { background-size: 100% var(--mark-thickness); }
+
+/* ---- Linien ziehen sich ----------------------------------------
+   Prinzipien und Roadmap-Schritte bekommen ihre Trennlinie erst,
+   wenn der Inhalt da ist. Border wird zu Pseudo-Element, sonst
+   lässt sich nichts animieren. */
+.principle { border-top: 0; position: relative; }
+.principle::before,
+.step::before, .step:last-child::after,
+.split .fact::before, .split .fact:last-child::after,
+.t-contact .contact-row::before, .t-contact .contact-row:last-child::after {
+  content: ""; position: absolute; left: 0; right: 0; height: 1px;
+  background: currentColor; opacity: 0.28;
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 1000ms var(--ease-out);
+  transition-delay: var(--d, 0ms);
+}
+.principle::before { top: 0; opacity: 1; }
+.active .principle::before,
+.active .step::before, .active .step:last-child::after,
+.active .split .fact::before, .active .split .fact:last-child::after,
+.active .t-contact .contact-row::before, .active .t-contact .contact-row:last-child::after {
+  transform: scaleX(1);
+}
+
+.step, .split .fact, .t-contact .contact-row { border-top: 0; position: relative; }
+.step:last-child, .split .fact:last-child, .t-contact .contact-row:last-child { border-bottom: 0; }
+.step::before, .split .fact::before, .t-contact .contact-row::before { top: 0; }
+.step:last-child::after, .split .fact:last-child::after, .t-contact .contact-row:last-child::after { bottom: 0; }
+
+/* ---- Karten kommen mit Tiefe -----------------------------------
+   Minimal skaliert, damit sie nach vorne kippen statt nur zu
+   erscheinen. 0.96 ist die Grenze - darunter wird es Effekt. */
+.sys-card { transform-origin: center bottom; }
+.active .sys-card[data-r] { transition: opacity var(--dur-reveal) var(--ease-out), transform 900ms var(--ease-out); }
+.sys-card[data-r] { transform: translateY(22px) scale(0.96); }
+.active .sys-card[data-r] { transform: translateY(0) scale(1); }
+
+/* ---- Aurora atmet ----------------------------------------------
+   Sehr langsam, sehr wenig. Man soll es nicht sehen, nur merken,
+   dass die Folie lebt. */
+@keyframes aurora-drift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(-2.5%, 2%, 0) scale(1.08); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+
+/* Zweite Ebene: die drei Farbzentren wandern unabhängig voneinander.
+   Zwei Bewegungen mit verschiedener Dauer (26 s und 47 s) laufen nie
+   synchron - dadurch wiederholt sich das Bild praktisch nie, und der
+   Verlauf wirkt wie Wetter statt wie eine Schleife.
+   Beide zusammen auf einem Element, weil background-position bei
+   mehreren Hintergründen als Liste animierbar ist. Das spart drei
+   zusätzliche Ebenen im Markup. */
+@keyframes aurora-live {
+  0%   { background-position: 10% 20%, 85% 10%, 55% 92%; }
+  33%  { background-position: 26% 6%,  68% 30%, 38% 76%; }
+  66%  { background-position: 2% 34%,  95% 14%, 70% 98%; }
+  100% { background-position: 10% 20%, 85% 10%, 55% 92%; }
+}
+.slide.aurora.active::before {
+  background-size: 150% 150%, 150% 150%, 150% 150%;
+  background-repeat: no-repeat;
+  animation: aurora-drift 26s var(--ease-in-out) infinite,
+             aurora-live  47s var(--ease-in-out) infinite;
+}
+
+/* ---- Vollbild: das Bild schiebt nach --------------------------- */
+.t-full .content { will-change: transform; }
+
+/* ---- Zahlen ----------------------------------------------------
+   Hochzählen macht aus einer Zahl ein Ereignis. Nur für Zahlen,
+   die etwas beweisen - nicht für Seitennummern. */
+[data-count] { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+
+/* ---- Blackout (Taste B) ----------------------------------------
+   Wie in PowerPoint: Bild weg, Aufmerksamkeit zurück zum Menschen
+   im Raum. */
+.blackout {
+  position: fixed; inset: 0; z-index: 200; background: #000;
+  opacity: 0; pointer-events: none;
+  transition: opacity 320ms var(--ease-out);
+}
+.blackout.on { opacity: 1; pointer-events: auto; }
+
+/* ---- Übersicht (Taste O) --------------------------------------- */
+.overview {
+  position: fixed; inset: 0; z-index: 180;
+  background: rgba(10,10,10,0.96);
+  color: var(--paper);
+  padding: 64px 72px;
+  overflow-y: auto;
+  opacity: 0; pointer-events: none;
+  transition: opacity 260ms var(--ease-out);
+}
+.overview.on { opacity: 1; pointer-events: auto; }
+.overview h4 {
+  font-family: var(--font-mono); font-weight: 500; font-size: 13px;
+  letter-spacing: var(--tracking-eyebrow); text-transform: uppercase;
+  color: var(--paper-55); margin-bottom: 32px;
+}
+.ov-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px 32px; }
+.ov-item {
+  display: grid; grid-template-columns: 48px 1fr; gap: 20px; align-items: baseline;
+  padding: 14px 16px; border-radius: var(--radius-sm);
+  cursor: pointer; transition: background var(--dur-fast) var(--ease-out);
+}
+.ov-item:hover { background: rgba(240,240,240,0.08); }
+.ov-item.is-current { background: rgba(240,240,240,0.12); }
+.ov-item .n { font-size: 13px; opacity: 0.5; }
+.ov-item .t { font-size: 20px; font-weight: 500; }
+.ov-item.is-current .t {
+  background-image: linear-gradient(var(--lime), var(--lime));
+  background-repeat: no-repeat;
+  background-size: 100% var(--mark-thickness);
+  background-position: 0 var(--mark-position);
+}
+
+/* ---- Wer Bewegung abgestellt hat, bekommt keine ---------------- */
+@media (prefers-reduced-motion: reduce) {
+  [data-rise] .wi { transform: none !important; opacity: 1 !important; transition: none !important; }
+  .slide .hl { background-size: 100% var(--mark-thickness) !important; transition: none !important; }
+  .principle::before, .step::before, .step:last-child::after,
+  .split .fact::before, .split .fact:last-child::after,
+  .t-contact .contact-row::before, .t-contact .contact-row:last-child::after {
+    transform: scaleX(1) !important; transition: none !important;
+  }
+  .sys-card[data-r] { transform: none !important; }
+  .slide.aurora.active::before { animation: none !important; }
+
+  /* Das Signet steht sofort fertig zusammengesetzt da, der Name sitzt
+     sofort richtig, alle Linien stehen. Die Folie sagt dasselbe - nur
+     ohne den Weg dahin. */
+  .embed-shape, .active .embed-shape {
+    transform: translateX(0) !important; opacity: 1 !important; transition: none !important;
+  }
+  .active .embed-blob { animation: none !important; }
+  .person-figure .p-name, .active .person-figure .p-name {
+    transform: translateY(-14%) !important; transition: none !important;
+  }
+  .agenda-item::before, .track-step::before, .service::before,
+  .active .agenda-item::before, .active .track-step::before, .active .service::before {
+    transform: scaleX(1) !important; transition: none !important;
+  }
+  /* Diagramme stehen sofort fertig da. Ein halb gewachsener Balken
+     ist eine falsche Zahl - das ist der einzige Effekt im System,
+     bei dem Abbrechen nicht nur hässlich, sondern unwahr wäre. */
+  .bar, .active .bar { transform: scaleY(1) !important; transition: none !important; }
+  .bar-val, .active .bar-val { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .chart-grid span, .active .chart-grid span { transform: scaleX(1) !important; transition: none !important; }
+  .line-path, .active .line-path { stroke-dashoffset: 0 !important; transition: none !important; }
+  .line-path.is-weak, .active .line-path.is-weak { opacity: 0.28 !important; }
+  .line-area, .active .line-area { opacity: 0.07 !important; transition: none !important; }
+  .line-dot, .active .line-dot { transform: scale(1) !important; transition: none !important; }
+
+  /* Endlos laufende Punkte sind für empfindliche Augen das Schlimmste
+     im ganzen System - hier stehen sie still, die Aussage steht trotzdem. */
+  .active .aiflow-lane i { animation: none !important; opacity: 0.75 !important; }
+  .aiflow-lane i:nth-child(1) { left: 12% !important; }
+  .aiflow-lane i:nth-child(2) { left: 38% !important; }
+  .aiflow-lane i:nth-child(3) { left: 64% !important; }
+  .aiflow-lane i:nth-child(4) { left: 88% !important; }
+  .active .aiflow-gate::before { animation: none !important; opacity: 1 !important; }
+  .money-bar, .active .money-bar { transform: scaleX(1) !important; transition: none !important; }
+
+  .veil img, .veil video, .active .veil img, .active .veil video {
+    opacity: 0.22 !important; transform: none !important; transition: none !important;
+  }
+}
+
+@media print {
+  [data-rise] .wi { transform: none !important; opacity: 1 !important; }
+  .slide .hl { background-size: 100% var(--mark-thickness) !important; }
+  .principle::before, .step::before, .step:last-child::after,
+  .split .fact::before, .split .fact:last-child::after,
+  .t-contact .contact-row::before, .t-contact .contact-row:last-child::after {
+    transform: scaleX(1) !important;
+  }
+  .sys-card[data-r] { transform: none !important; }
+  .blackout, .overview { display: none !important; }
+  .embed-shape { transform: translateX(0) !important; opacity: 1 !important; }
+  .active .embed-blob { animation: none !important; }
+  /* Die zweite Endlos-Animation. Wird sie im Druck nicht angehalten,
+     erwischt der Export die Aurora an einer zufälligen Stelle ihres
+     26-Sekunden-Wegs - und zwei Ausdrucke sehen verschieden aus. */
+  .slide.aurora.active::before { animation: none !important; }
+  .person-figure .p-name { transform: translateY(-14%) !important; }
+  .agenda-item::before, .track-step::before, .service::before { transform: scaleX(1) !important; }
+  .embed-label { opacity: 1 !important; transform: none !important; }
+  .bar { transform: scaleY(1) !important; }
+  .bar-val { opacity: 1 !important; transform: none !important; }
+  .chart-grid span { transform: scaleX(1) !important; }
+  .line-path { stroke-dashoffset: 0 !important; }
+  .line-path.is-weak { opacity: 0.28 !important; }
+  .line-area { opacity: 0.07 !important; }
+  .line-dot { transform: scale(1) !important; }
+  .aiflow-lane i { animation: none !important; opacity: 0.75 !important; }
+  .aiflow-lane i:nth-child(1) { left: 12% !important; }
+  .aiflow-lane i:nth-child(2) { left: 38% !important; }
+  .aiflow-lane i:nth-child(3) { left: 64% !important; }
+  .aiflow-lane i:nth-child(4) { left: 88% !important; }
+  .aiflow-gate::before { animation: none !important; }
+  .money-bar { transform: scaleX(1) !important; }
+  .veil img, .veil video { opacity: 0.22 !important; transform: none !important; }
+}

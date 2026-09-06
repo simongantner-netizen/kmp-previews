@@ -1,0 +1,2505 @@
+/* =========================================================
+   Kampagnons Präsentations-System – Deck-Engine
+
+   Eine feste Bühne von 1920x1080, die als Ganzes auf das Fenster
+   skaliert wird. Alles darin ist in Pixeln gesetzt. Der Vorteil:
+   was auf dem Bildschirm steht, steht im PDF an derselben Stelle.
+
+   Aufbau einer Folie:
+
+     <section class="slide t-TYP" data-title="Kurzname">
+       <div class="eyebrow" data-r="1">Überzeile</div>
+       ...  jedes Element bekommt data-r="1..6" für den Reveal-Takt
+     </section>
+
+   Modifikatoren:  .ink (dunkle Folie)  ·  .center (vertikal zentriert)
+   ========================================================= */
+
+/* ---- Bühne -----------------------------------------------------
+   Die Bühne wird über `zoom` skaliert, nicht über `transform: scale`.
+   Der Unterschied ist der Grund, warum das Deck auf einem 4K-Beamer
+   scharf bleibt:
+
+   transform: scale() rastert die Folie einmal in Bühnengrösse und
+   vergrössert danach das Bild - aus 1920 px werden auf 4K vier Pixel
+   pro Pixel, und Schrift wird weich.
+
+   zoom rechnet das Layout in der Zielgrösse. Buchstaben, Linien und
+   SVG werden erst bei der Endgrösse gerastert und sind bei jeder
+   Auflösung so scharf wie die Anzeige es zulässt.
+
+   Die Zentrierung übernimmt Flexbox, damit keine Transform mehr im
+   Spiel ist - zwei Skalierungsverfahren übereinander gäben wieder
+   krumme Pixel.
+   ---------------------------------------------------------------- */
+html, body { height: 100%; overflow: hidden; margin: 0; }
+body { background: var(--ink); }
+
+.viewport {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.stage {
+  width: var(--stage-w);
+  height: var(--stage-h);
+  position: relative;
+  flex: 0 0 auto;
+  transform-origin: center center;   /* nur für den Notfall-Rückfall */
+  background: var(--paper);
+  overflow: hidden;
+}
+
+/* ---- Folie ----------------------------------------------------- */
+.slide {
+  position: absolute; inset: 0;
+  box-sizing: border-box;          /* ohne das kippt der Print-Export */
+  padding: var(--slide-pad-y) var(--slide-pad-x);
+  display: flex; flex-direction: column;
+  opacity: 0; visibility: hidden;
+  transform: translateY(14px);
+  transition: opacity var(--dur-slide) var(--ease-out),
+              transform var(--dur-slide) var(--ease-out),
+              visibility 0s linear var(--dur-slide);
+  background: var(--paper); color: var(--ink);
+}
+.slide.active {
+  opacity: 1; visibility: visible;
+  transform: translateY(0);
+  transition: opacity var(--dur-slide) var(--ease-out),
+              transform var(--dur-slide) var(--ease-out),
+              visibility 0s;
+  z-index: 2;
+}
+.slide.center { justify-content: center; }
+
+.slide.ink { background: var(--ink); color: var(--paper); }
+.slide.ink .eyebrow { color: var(--paper-55); }
+.slide.ink .num,
+.slide.ink .step .n { opacity: 0.55; }
+.slide.ink .principle { border-top-color: var(--paper); }
+.slide.ink .step { border-top-color: var(--rule-inverse); }
+.slide.ink .step:last-child { border-bottom-color: var(--rule-inverse); }
+
+/* ---- Gestaffelte Reveals --------------------------------------- */
+[data-r] {
+  opacity: 0; transform: translateY(22px);
+  transition: opacity var(--dur-reveal) var(--ease-out),
+              transform var(--dur-reveal) var(--ease-out);
+}
+.active [data-r] { opacity: 1; transform: translateY(0); }
+.active [data-r="1"] { transition-delay: var(--r1); }
+.active [data-r="2"] { transition-delay: var(--r2); }
+.active [data-r="3"] { transition-delay: var(--r3); }
+.active [data-r="4"] { transition-delay: var(--r4); }
+.active [data-r="5"] { transition-delay: var(--r5); }
+.active [data-r="6"] { transition-delay: var(--r6); }
+
+/* ---- Chrome ---------------------------------------------------- */
+.hud {
+  position: absolute; z-index: 50;
+  left: 0; right: 0; bottom: 0;
+  height: 3px; background: rgba(10,10,10,0.10);
+}
+/* Der Balken ist Ink, nie Lime. Lime ist ausschliesslich Marker. */
+.hud .bar { height: 100%; width: 0%; background: var(--ink); transition: width 400ms var(--ease-out); }
+.stage.dark .hud { background: rgba(240,240,240,0.14); }
+.stage.dark .hud .bar { background: var(--paper); }
+
+.counter {
+  position: absolute; z-index: 50; right: 48px; bottom: 28px;
+  font-family: var(--font-mono); font-weight: 500; font-size: 13px;
+  letter-spacing: var(--tracking-meta);
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+  color: var(--ink-45);
+}
+.stage.dark .counter { color: var(--paper-55); }
+
+.hint {
+  position: absolute; z-index: 60; left: 50%; bottom: 24px;
+  transform: translateX(-50%);
+  font-family: var(--font-mono); font-weight: 500; font-size: 12px;
+  letter-spacing: var(--tracking-eyebrow);
+  color: var(--paper-55);
+  opacity: 1; transition: opacity 1s; pointer-events: none;
+}
+.hint.hide { opacity: 0; }
+
+/* Vollbild-Schalter. Sitzt ausserhalb der Bühne, damit er im Export
+   nicht mitgedruckt wird und die Folie nicht anfasst. Taste F tut
+   dasselbe - der Knopf ist für alle, die das nicht wissen. */
+.fsbtn {
+  position: fixed; z-index: 60; left: 24px; bottom: 20px;
+  appearance: none; background: transparent; cursor: pointer;
+  border: 1px solid rgba(240,240,240,0.25); border-radius: var(--radius-pill);
+  padding: 7px 16px 8px;
+  font-family: var(--font-mono); font-weight: 500; font-size: 11px;
+  letter-spacing: var(--tracking-eyebrow);
+  color: rgba(240,240,240,0.5);
+  transition: color var(--dur-base) var(--ease-out),
+              border-color var(--dur-base) var(--ease-out);
+}
+/* Im Vollbild ist der Knopf weg - Esc bringt einen raus, und auf der
+   Folie soll nichts stehen, was nicht zur Folie gehört. Die Regel ist
+   ausdrücklich hier und nicht dem `[hidden]` des Browsers überlassen:
+   ein `display` in einer Autorenregel würde es sonst überstimmen. */
+.fsbtn[hidden] { display: none; }
+.fsbtn:hover { color: var(--paper); border-color: rgba(240,240,240,0.6); }
+.fsbtn:focus-visible { outline: 2px solid var(--lime); outline-offset: 3px; }
+
+/* ---- Cornermark ------------------------------------------------
+   Das Original-Lockup auf jeder Folie, oben rechts. Nie nachgebaut,
+   nie aus Signet plus getipptem Text. Zwei Dateien: positiv auf
+   Paper, negativ auf Ink und Bild. Die Negativ-viewBox ist enger
+   (kein Randraum), deshalb 49px Höhe statt 60px plus 11px Margin -
+   erst damit sind beide Varianten optisch deckungsgleich.
+   ---------------------------------------------------------------- */
+.cornermark { display: none; }
+.cm {
+  position: absolute; top: 56px; right: var(--slide-pad-x); z-index: 5;
+  height: 60px; display: flex; align-items: center; justify-content: flex-end;
+}
+.cm img { display: block; }
+.cm .lg-pos { height: 60px; }
+.cm .lg-neg { height: 49px; margin-right: 11px; display: none; }
+.slide.ink .cm .lg-pos, .t-full .cm .lg-pos { display: none; }
+.slide.ink .cm .lg-neg, .t-full .cm .lg-neg { display: block; }
+
+/* =========================================================
+   FOLIENTYPEN
+   Jeder Typ hat einen Job. Wer einen neuen braucht, legt ihn
+   hier an - nicht als style-Attribut in einem Deck.
+   ========================================================= */
+
+/* ---- t-title · Titelfolie -------------------------------------
+   Einmal pro Deck, immer die erste. Aurora an, und dort lebt sie:
+   zwei Bewegungen mit verschiedener Dauer, siehe motion.css.
+
+   Der Firmenname steht NICHT als Zeile auf der Folie - das Lockup
+   oben rechts sagt ihn bereits. Zweimal derselbe Name auf der ersten
+   Folie ist kein Auftritt, sondern eine Wiederholung. */
+.t-title h1 { font-size: var(--fs-title); max-width: 1560px; }
+.t-title .tt-for { font-size: 34px; font-weight: 500; margin-bottom: 28px; }
+.t-title .tt-meta {
+  margin-top: 64px; display: flex; gap: 40px;
+  font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-meta);
+  letter-spacing: var(--tracking-eyebrow);
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+  opacity: 0.55;
+}
+
+/* ---- t-statement · Aussage ------------------------------------
+   Ein Gedanke, gross. Höchstens ein Kicker darunter. Keine Liste. */
+.t-statement { justify-content: center; }
+.t-statement .kicker { margin-top: 56px; color: var(--ink-80); }
+.t-statement.ink .kicker { color: var(--paper-92); }
+
+/* ---- t-claim · Leitidee und Closer ----------------------------
+   Die dunkelste, lauteste Folie. Genau eine pro Deck als Leitidee,
+   optional eine als Closer. Nichts ausser Überzeile und Claim. */
+.t-claim { justify-content: center; }
+.t-claim .claim + .claim { margin-top: 0; }
+
+/* ---- t-principles · Drei oder vier Prinzipien ------------------
+   Der Arbeitsplatz für Haltung, Vorgehen, Argumente. Nie fünf. */
+.cols-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap-cols); }
+.cols-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gap-cols-4); }
+
+.principle { border-top: var(--border-ink); padding-top: 28px; }
+.principle .num { display: block; margin-bottom: 18px; }
+.principle h3 { margin-bottom: 14px; }
+.principle p { font-size: 24px; line-height: 1.42; opacity: 0.9; }
+
+/* ---- t-reels · Vier Ausschnitte im Hochformat -------------------
+   Für Referenzen aus dem Feed: die Ausschnitte laufen stumm in
+   Schleife, damit die Folie zeigt statt beschreibt. Die Bildunter-
+   schrift nennt Kanal und Machart, nie eine Zahl - Reichweiten aus
+   zweiter Hand gehören ins Gesagte, nicht auf die Folie.
+   Verbot: nie mehr als vier, sonst schaut niemand mehr eine an. */
+.reels { display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px; flex: 1; min-height: 0; }
+.reel { display: flex; flex-direction: column; min-height: 0; margin: 0; }
+.reel video {
+  flex: 1; min-height: 0; height: 100%; width: auto; display: block;
+  aspect-ratio: 9 / 16; margin: 0 auto;
+  object-fit: cover; border-radius: var(--radius-sm); background: #000;
+}
+.reel figcaption { margin-top: 16px; display: flex; flex-direction: column; gap: 6px; }
+.reel .who { font-size: 22px; font-weight: 600; }
+.reel .what {
+  font-family: var(--font-mono); font-weight: 500; font-size: 14px;
+  letter-spacing: var(--tracking-eyebrow); text-transform: uppercase; opacity: 0.5;
+}
+
+/* ---- t-formula · Satzformel ------------------------------------
+   Ein Satz mit Lücken, der im Termin gefüllt wird. Die Bindewörter
+   treten zurück, die Lücken tragen. Kein Lime: sieben Marker sind
+   keiner. Die Linie unter der Lücke ist eine Linie zum Ausfüllen. */
+.formula { font-size: 62px; font-weight: 400; line-height: 1.68; letter-spacing: var(--tracking-tight); max-width: 1640px; }
+.formula.lg { font-size: 82px; line-height: 1.5; }
+.formula .fx { opacity: 0.4; }
+.formula .slot { font-weight: 700; white-space: nowrap; border-bottom: 3px solid var(--rule-strong); padding-bottom: 4px; }
+.slide.ink .formula .slot { border-bottom-color: var(--paper); }
+
+/* Eine Spalte, die ausgeschlossen wird. Nur auf Folien einsetzen, die
+   eine Entscheidung zeigen - auf einer Aufzählung entwertet sie
+   willkürlich eine von drei gleichwertigen Spalten. Die beiden
+   übrigen brauchen keine Auszeichnung: der Kontrast reicht, und
+   Lime bleibt der eine Marker pro Folie. */
+.principle.is-out { opacity: 0.34; }
+.principle.is-out h3 { text-decoration: line-through; text-decoration-thickness: 2px; text-underline-offset: 2px; }
+.cols-4 .principle h3 { font-size: 34px; }
+.cols-4 .principle p  { font-size: 21px; line-height: 1.45; }
+
+/* ---- t-wordbank · Wortwand ------------------------------------
+   Ein Vorrat zum Auswählen, nicht zum Lesen. Werte, Adjektive,
+   Namensideen - alles, wovon am Ende drei übrig bleiben sollen.
+
+   Alphabetisch, nie nach Bedeutung gruppiert: jede Gruppierung ist
+   schon eine Empfehlung, und die Auswahl gehört dem, der davorsteht.
+
+   Verbot: kein Marker. Wer hier ein Wort auszeichnet, hat die
+   Entscheidung getroffen, die der Kunde treffen soll. Und keine
+   Überschrift, die die Auswahl schon eingrenzt («Unsere Favoriten»).
+   Die Wand ist bewusst zu gross - das Aussortieren ist die Arbeit. */
+.wordbank { display: flex; flex-wrap: wrap; align-content: center; flex: 1; row-gap: 6px; }
+.wordbank span { font-size: 33px; line-height: 1.32; opacity: 0.88; white-space: nowrap; }
+.wordbank span::after { content: "·"; opacity: 0.32; padding: 0 15px; }
+.wordbank span:last-child::after { content: ""; padding: 0; }
+.slide.ink .wordbank span { opacity: 0.82; }
+
+/* ---- t-cards · System-Karten ----------------------------------
+   Wenn mehrere Teile ein Ganzes ergeben und jedes eine Rolle hat. */
+.card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px; flex: 1; align-content: center; }
+.card-grid.cols-3 { grid-template-columns: repeat(3, 1fr); gap: var(--gap-cols); }
+.sys-card {
+  border: var(--border-ink); border-radius: var(--radius-sm);
+  padding: 36px 32px 40px;
+  display: flex; flex-direction: column; gap: 16px;
+  background: rgba(255,255,255,0.4);
+}
+.sys-card .role {
+  font-family: var(--font-mono); font-weight: 500; font-size: 13px;
+  letter-spacing: var(--tracking-eyebrow); text-transform: uppercase; opacity: 0.55;
+}
+.sys-card h3 { font-size: 30px; }
+.sys-card p  { font-size: var(--fs-small); line-height: 1.4; opacity: 0.85; }
+.slide.ink .sys-card { border-color: var(--paper); background: rgba(240,240,240,0.06); }
+
+/* ---- t-wheel · Markensteuerrad --------------------------------
+   Das Modell nach Esch als Folie: vier Quadranten um einen Kern,
+   links die Hard Facts, rechts die Soft Facts.
+
+   Die Beschriftungen liegen BEWUSST ausserhalb des Rings. Im
+   Original stehen sie gebogen im Band - auf der 1920er-Buehne
+   muesste dafuer jede Zeile von Hand auf die Bandbreite getrimmt
+   werden, und ein Wort mehr sprengt die Grafik. Aussen waechst der
+   Text nach oben und unten weg, ohne den Ring anzufassen.
+
+   Kein Lime, wie bei t-agentmap. Beide Haelften liegen auf
+   derselben Deckkraft (0.12 auf Ink): eine Abstufung zwischen Hard
+   und Soft haette eine Rangfolge behauptet, die es bei Esch nicht
+   gibt. Getrennt wird ueber die Beschriftung, nicht ueber den Ton.
+
+   Der Ring ist EIN Kreis pro Haelfte, gezeichnet ueber
+   stroke-dasharray. Wer die Segmente einzeln als Pfade nachbaut,
+   bekommt an den Stossstellen krumme Kanten. */
+.wheel {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  grid-template-rows: auto auto auto;
+  gap: 28px 56px;
+  flex: 1; align-items: center; align-content: center;
+}
+.wheel-fig { grid-column: 2; grid-row: 1 / span 3; width: 560px; height: 560px; }
+.wq h3 { font-size: 30px; letter-spacing: var(--tracking-tight); }
+.wq p {
+  font-family: var(--font-mono); font-size: var(--fs-small);
+  opacity: 0.55; margin-top: 6px;
+}
+.wq.is-left, .wside.is-left { text-align: right; }
+.wside {
+  font-family: var(--font-mono); font-weight: 500; font-size: 13px;
+  letter-spacing: var(--tracking-eyebrow); text-transform: uppercase; opacity: 0.45;
+}
+/* Die Kernbeschriftung liegt auf der gefuellten Scheibe und muss
+   deshalb gegen den Grund laufen, nicht mit ihm. */
+.wheel-core { fill: var(--paper); }
+.slide.ink .wheel-core { fill: var(--ink); }
+.wheel-core-name { font-size: 26px; font-weight: 700; }
+.wheel-core-q { font-size: 18px; opacity: 0.7; }
+
+/* ---- t-steps · Roadmap ----------------------------------------
+   Zeitliche Abfolge. Drei bis vier Schritte, mehr liest niemand. */
+.steps { display: flex; flex-direction: column; flex: 1; justify-content: center; max-width: 1500px; }
+.step {
+  display: grid; grid-template-columns: 140px 420px 1fr; gap: 48px;
+  align-items: baseline; padding: 44px 0;
+  border-top: var(--border-rule);
+}
+.step:last-child { border-bottom: var(--border-rule); }
+.step .n { font-size: 20px; opacity: 0.45; }
+.step h3 { font-size: var(--fs-h3); }
+.step p  { font-size: var(--fs-body); line-height: 1.45; opacity: 0.85; }
+
+/* ---- t-split · Aussage plus Beleg -----------------------------
+   Links die Behauptung, rechts das, was sie hält: Zahlen, Fakten,
+   eine Liste. Für Leistungen, Referenzen, Preisrahmen. */
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-9); flex: 1; align-items: center; }
+.split .facts { display: flex; flex-direction: column; }
+.split .fact { display: grid; grid-template-columns: 1fr auto; gap: 32px; align-items: baseline; padding: 26px 0; border-top: var(--border-rule); }
+.split .fact:last-child { border-bottom: var(--border-rule); }
+.split .fact dt { font-size: var(--fs-body); opacity: 0.75; }
+.split .fact dd {
+  margin: 0; font-family: var(--font-mono); font-weight: 500; font-size: 34px;
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+}
+
+/* ---- t-quotes · Zitat-Stapel ----------------------------------
+   Fremde Worte, gestapelt. Belege, O-Töne, Auszüge aus Dokumenten. */
+.quotes { display: flex; flex-direction: column; gap: 22px; max-width: 1300px; }
+.quote-chip { font-size: var(--fs-h2); font-weight: 700; line-height: 1.1; letter-spacing: var(--tracking-tight); }
+
+/* ---- t-full · Vollbild ----------------------------------------
+   Bild trägt, Text sitzt unten im Scrim. Immer Negativ-Lockup. */
+.t-full { padding: 0; }
+.t-full .bg {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center;
+  transform: scale(1.06);
+  transition: transform var(--dur-kenburns) var(--ease-out);
+}
+.t-full.active .bg { transform: scale(1.0); }
+.t-full .scrim {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top,
+    rgba(10,10,10,0.82) 0%,
+    rgba(10,10,10,0.28) 42%,
+    rgba(10,10,10,0.05) 70%);
+}
+.t-full .scrim.light {
+  background: linear-gradient(to top,
+    rgba(10,10,10,0.72) 0%,
+    rgba(10,10,10,0.12) 38%,
+    rgba(10,10,10,0) 60%);
+}
+.t-full .content {
+  position: absolute; left: var(--slide-pad-x); right: var(--slide-pad-x); bottom: var(--slide-pad-y);
+  color: var(--paper);
+}
+.t-full .eyebrow { color: var(--paper-65); margin-bottom: 28px; }
+.t-full h2 { font-size: var(--fs-hero); font-weight: 700; line-height: 1.0; letter-spacing: var(--tracking-tight); margin-bottom: 28px; }
+.t-full .lead { max-width: 1150px; color: var(--paper-92); }
+
+/* Script-Block: der einzige Ort, an dem Lime als Linie auftritt -
+   als Zitatbalken, nicht als Fläche. */
+.script {
+  margin-top: 36px; max-width: 1150px;
+  border-left: 3px solid var(--lime);
+  padding: 8px 0 8px 36px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.script p { font-size: 24px; line-height: 1.35; color: rgba(240,240,240,0.95); }
+.script .who {
+  font-family: var(--font-mono); font-weight: 500; font-size: 13px;
+  letter-spacing: var(--tracking-eyebrow); text-transform: uppercase;
+  color: var(--paper-55); margin-right: 14px;
+}
+
+/* ---- .linkbtn · der Absprung aus der Folie ---------------------
+   Für Folien, die etwas Laufendes zeigen: Prototyp, Website, App.
+   Der Knopf springt ins echte Ding, statt es zu behaupten.
+
+   Drei Dinge, die dazugehören:
+   · `deck.js` blättert bei einem Klick auf `a[href]` nicht mehr weiter.
+     Ohne das öffnet der Knopf das Ziel UND schaltet eine Folie vor.
+   · `target="_blank"` gehört ins Markup, sonst verlässt man das Deck
+     und kommt mit dem Zurück-Knopf auf Folie 1 zurück.
+   · Der Knopf ist Ink auf Paper, nie Lime. Lime bleibt Marker.
+
+   Verbot: höchstens einer pro Folie. Zwei Absprünge sind keine
+   Einladung mehr, sondern eine Auswahl - und die hält niemand an. */
+.linkbtn {
+  display: inline-flex; align-items: center; gap: 14px;
+  margin-top: 40px; padding: 18px 34px 20px;
+  border-radius: var(--radius-pill);
+  background: var(--ink); color: var(--paper);
+  font-family: var(--font-mono); font-weight: 500; font-size: 18px;
+  letter-spacing: var(--tracking-eyebrow); text-transform: uppercase;
+  text-decoration: none; white-space: nowrap;
+  transition: transform var(--dur-base) var(--ease-out), opacity var(--dur-base) var(--ease-out);
+}
+.linkbtn::after { content: "→"; font-size: 20px; transform: translateY(-1px); }
+.linkbtn:hover { transform: translateY(-2px); opacity: 0.88; }
+.slide.ink .linkbtn, .t-full .linkbtn { background: var(--paper); color: var(--ink); }
+.linkbtn .sub {
+  text-transform: none; letter-spacing: 0; opacity: 0.55; font-size: 15px;
+}
+
+.tagrow { display: flex; gap: 14px; margin-top: 34px; flex-wrap: wrap; }
+.tag {
+  border: 1px solid rgba(240,240,240,0.4); border-radius: var(--radius-pill);
+  padding: 10px 22px 12px; font-size: 17px; color: rgba(240,240,240,0.9);
+}
+.slide:not(.t-full) .tag { border-color: var(--rule-strong); color: var(--ink-80); }
+
+/* ---- t-contact · Abbinder -------------------------------------
+   Letzte Folie. Wer, wie erreichbar, was als Nächstes passiert. */
+.t-contact .contact-rows { display: flex; flex-direction: column; margin-top: 56px; max-width: 1200px; }
+.t-contact .contact-row {
+  display: grid; grid-template-columns: 280px 1fr; gap: 40px;
+  padding: 24px 0; border-top: var(--border-rule); align-items: baseline;
+}
+.t-contact .contact-row:last-child { border-bottom: var(--border-rule); }
+.t-contact .contact-row dt { font-family: var(--font-mono); font-weight: 500; font-size: 13px; letter-spacing: var(--tracking-eyebrow); text-transform: uppercase; opacity: 0.55; }
+.t-contact .contact-row dd { margin: 0; font-size: var(--fs-lead); }
+
+/* =========================================================
+   ARBEITSPFERDE
+   Die Typen, die in jedem zweiten Deck vorkommen. Unspektakulär
+   und genau deshalb wichtig: wer dafür jedes Mal etwas Eigenes
+   baut, hat nach drei Decks drei verschiedene Systeme.
+   ========================================================= */
+
+/* ---- t-chapter · Kapiteltrenner -------------------------------
+   Der Typ, ohne den ein modulares Deck auseinanderfällt. Grosse
+   Nummer, Kapitelname, sonst nichts. */
+.t-chapter { justify-content: center; }
+.t-chapter .ch-num {
+  font-family: var(--font-mono); font-weight: 500;
+  font-size: 220px; line-height: 0.9; opacity: 0.22;
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+  margin-bottom: -20px;
+}
+.t-chapter h1 { font-size: var(--fs-giant); }
+.t-chapter .ch-sub { margin-top: 32px; font-size: var(--fs-lead); opacity: 0.7; max-width: 1100px; }
+
+/* ---- t-agenda · Inhalt ----------------------------------------
+   Zeigt die Module des Decks. Das aktuelle Kapitel bekommt den
+   Marker - so weiss der Raum immer, wo er ist. */
+.agenda { display: flex; flex-direction: column; flex: 1; justify-content: center; max-width: 1400px; }
+.agenda-item {
+  display: grid; grid-template-columns: 120px 1fr auto; gap: 48px;
+  align-items: baseline; padding: 30px 0;
+  position: relative;
+}
+/* ---- Haarlinien: 2px, nicht 1px --------------------------------
+   Die Buehne wird mit `zoom` auf das Fenster gerechnet. Eine
+   1px-Linie landet dadurch auf 0.98, 0.75 oder 0.6 Geraetepixeln -
+   und je nach Fensterbreite faellt genau eine davon beim Runden weg.
+   Nicht immer dieselbe, was die Suche teuer macht: das Element ist
+   da, nur unsichtbar. Am 03.09.2026 im Naturspur-Deck aufgeflogen,
+   auf der Uebersicht fehlte eine Trennlinie von sechs.
+   2px ueberleben jede Skalierung; die halbierte Deckkraft haelt das
+   optische Gewicht. Gilt fuer alle Linien dieser Art.
+   Verbot: keine 1px-Linie mehr neu anlegen. */
+
+.agenda-item::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: currentColor; opacity: 0.16;
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 1000ms var(--ease-out); transition-delay: var(--d, 0ms);
+}
+.active .agenda-item::before { transform: scaleX(1); }
+.agenda-item .n { font-size: 18px; opacity: 0.45; }
+.agenda-item h3 { font-size: var(--fs-h3); }
+.agenda-item .dur { font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-small); opacity: 0.5; }
+.agenda-item.is-done { opacity: 0.4; }
+
+/* Sieben Punkte passen nicht mehr in den Standardabstand - bei 30px
+   Innenabstand läuft die Liste um wenige Pixel über die Folie hinaus.
+   `.rows-7` zieht sie zusammen, statt die Schrift zu verkleinern:
+   eine engere Liste liest sich noch, eine kleinere Headline nicht.
+   Sieben ist zugleich das Ende der Fahnenstange - wer acht braucht,
+   hat zwei Präsentationen. */
+.agenda.rows-7 .agenda-item { padding: 24px 0; }
+
+/* ---- t-media · Bild und Text nebeneinander --------------------
+   Das Arbeitspferd schlechthin. Standard: Text links, Bild rechts.
+   .flip dreht es um. Mehr Varianten braucht es nicht - wer das
+   Bild oben will, nimmt t-full. */
+.media { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-9); flex: 1; align-items: center; }
+.media.flip .media-text { order: 2; }
+.media.flip .media-fig  { order: 1; }
+.media.wide-text { grid-template-columns: 1.25fr 1fr; }
+.media.wide-img  { grid-template-columns: 1fr 1.35fr; }
+.media-fig {
+  position: relative; align-self: stretch;
+  min-height: 620px; border-radius: var(--radius-sm); overflow: hidden;
+  background: rgba(10,10,10,0.06);
+}
+.media-fig img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.media-fig .cap {
+  position: absolute; left: 24px; bottom: 20px;
+  font-family: var(--font-mono); font-weight: 500; font-size: 13px;
+  letter-spacing: var(--tracking-eyebrow); text-transform: uppercase;
+  color: var(--paper); text-shadow: 0 1px 8px rgba(10,10,10,0.6);
+}
+.media-text h1 { margin-bottom: 32px; }
+.media-text p + p { margin-top: 20px; }
+.slide.ink .media-fig { background: rgba(240,240,240,0.08); }
+
+/* ---- t-compare · zwei Seiten gegenüber ------------------------
+   Für Vorher/Nachher, Wir/Andere, Ist/Soll. Die Trennlinie in der
+   Mitte ist der ganze Trick. */
+.compare { display: grid; grid-template-columns: 1fr 1px 1fr; gap: var(--space-8); flex: 1; align-items: center; }
+/* Spalten oben ausrichten statt vertikal zentriert. `t-compare`
+   zentriert von Haus aus, und das stimmt, solange beide Listen gleich
+   lang sind. Bei drei gegen fuenf Eintraegen rutschen die
+   Spaltenkoepfe auseinander und die Folie sieht schief aus.
+   Am 03.09.2026 aus dem Naturspur-Deck zurueckgekommen.
+   Verbot: nicht als Standard setzen - bei gleich langen Spalten ist
+   zentriert ruhiger. */
+.compare.is-top { align-items: start; }
+.compare .divider { background: currentColor; opacity: 0.2; align-self: stretch; }
+.compare .side h3 { font-size: var(--fs-h3); margin-bottom: 28px; }
+.compare .side .role {
+  font-family: var(--font-mono); font-weight: 500; font-size: 13px;
+  letter-spacing: var(--tracking-eyebrow); text-transform: uppercase;
+  opacity: 0.55; display: block; margin-bottom: 16px;
+}
+.compare .side ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 18px; }
+.compare .side li { font-size: var(--fs-body); line-height: 1.4; padding-left: 32px; position: relative; }
+.compare .side li::before { content: "–"; position: absolute; left: 0; opacity: 0.45; }
+.compare .side.is-weak { opacity: 0.5; }
+
+/* ---- t-bigstat · eine grosse Zahl -----------------------------
+   Wenn eine einzige Zahl die Folie trägt. Mit data-count zählt sie
+   hoch. Immer mit Quelle darunter - eine Zahl ohne Herkunft ist
+   eine Behauptung. */
+.t-bigstat { justify-content: center; }
+.bigstat {
+  font-family: var(--font-mono); font-weight: 500;
+  font-size: 300px; line-height: 0.9; letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+}
+.bigstat-label { font-size: var(--fs-h3); font-weight: 700; margin-top: 24px; max-width: 1300px; }
+.bigstat-src { font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-small); opacity: 0.5; margin-top: 28px; }
+
+/* ---- t-table · Tabelle ----------------------------------------
+   Kein Zebra, keine Flächen. Nur Linien und Weissraum - sonst
+   bricht der Zweiton. Zahlen rechtsbündig und tabellarisch. */
+.t-table table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+.t-table thead th {
+  text-align: left; padding: 0 24px 18px 0;
+  font-family: var(--font-mono); font-weight: 500; font-size: 13px;
+  letter-spacing: var(--tracking-eyebrow); text-transform: uppercase;
+  opacity: 0.55; border-bottom: 1px solid currentColor;
+}
+.t-table tbody td {
+  padding: 24px 24px 24px 0; font-size: var(--fs-body); line-height: 1.35;
+  border-bottom: 1px solid; border-color: currentColor;
+}
+.t-table tbody tr td { border-bottom-color: rgba(10,10,10,0.14); }
+.slide.ink.t-table tbody tr td { border-bottom-color: rgba(240,240,240,0.16); }
+.t-table tbody tr:last-child td { border-bottom-width: 1px; }
+.t-table .col-num, .t-table th.col-num { text-align: right; padding-right: 0; }
+.t-table td.col-num {
+  font-family: var(--font-mono); font-weight: 500;
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+  white-space: nowrap;
+}
+.t-table tr.is-total td { font-weight: 700; border-bottom: 0; }
+.t-table tr.is-total td.col-num { font-size: 28px; }
+.t-table .note { margin-top: 28px; font-size: var(--fs-small); opacity: 0.6; }
+
+/* ---- t-offer · Leistungspakete --------------------------------
+   Für Retainer und Offerten. Drei Pakete, eines hervorgehoben.
+   Preis in Mono, damit Zahlen untereinander stehen. */
+.offer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; flex: 1; align-content: center; }
+
+/* Vier Wege: drei Retainer-Stufen plus das Projektgeschäft. Engere
+   Spalten, engere Karten, kleinere Preiszahl - sonst bricht der Preis
+   um. Vier ist das Maximum: ab fünf liest niemand mehr vergleichend,
+   und das Vergleichen ist der ganze Sinn dieser Folie. */
+/* Zwei Wege statt drei oder vier. Am 03.09.2026 aus dem
+   Naturspur-Deck zurueckgekommen: wer nur Mandat und Projekt zeigt,
+   braucht keine dritte leere Spalte. Schmaler als die Buehne, sonst
+   werden aus zwei Karten zwei Plakate.
+   Verbot: nicht fuer eine einzelne Karte missbrauchen - eine Karte
+   allein ist keine Wahl, sondern eine Ansage, und dafuer gibt es
+   t-statement. */
+.offer-grid.cols-2 {
+  grid-template-columns: repeat(2, 1fr); gap: 48px;
+  max-width: 1180px; margin: 0 auto;
+}
+.offer-grid.cols-4 { grid-template-columns: repeat(4, 1fr); gap: 28px; }
+.offer-grid.cols-4 .offer-card { padding: 32px 26px 34px; gap: 16px; }
+.offer-grid.cols-4 .offer-card h3 { font-size: 27px; }
+.offer-grid.cols-4 .offer-card .price { font-size: 40px; }
+.offer-grid.cols-4 .offer-card .price small { font-size: 15px; }
+.offer-grid.cols-4 .offer-card li { font-size: 16px; padding-left: 22px; }
+.offer-card {
+  border: var(--border-ink); border-radius: var(--radius-sm);
+  padding: 40px 36px 44px; display: flex; flex-direction: column; gap: 20px;
+  background: rgba(255,255,255,0.4);
+}
+.offer-card .tier {
+  font-family: var(--font-mono); font-weight: 500; font-size: 13px;
+  letter-spacing: var(--tracking-eyebrow); text-transform: uppercase; opacity: 0.55;
+}
+.offer-card h3 { font-size: 34px; }
+.offer-card .price {
+  font-family: var(--font-mono); font-weight: 500; font-size: 52px;
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+  letter-spacing: -0.02em; line-height: 1;
+}
+.offer-card .price small { font-size: 18px; font-weight: 500; opacity: 0.55; letter-spacing: 0; }
+.offer-card ul { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.offer-card li { font-size: var(--fs-small); line-height: 1.35; padding-left: 26px; position: relative; opacity: 0.85; }
+.offer-card li::before { content: "→"; position: absolute; left: 0; opacity: 0.5; }
+.offer-card.is-featured { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.offer-card.is-featured .tier, .offer-card.is-featured li { opacity: 0.75; }
+
+/* ---- t-leistung · was für das Geld herauskommt ----------------
+   Drei Bahnen untereinander, nicht drei Karten nebeneinander. Die
+   Preisfolie zeigt die Stufen schon als Karten; dieselbe Optik ein
+   zweites Mal liest sich als Wiederholung statt als Antwort.
+
+   Links die Stufe, rechts die Resultate in zwei Spalten - zwei,
+   damit die Bahn flach bleibt und alle drei auf eine Folie gehen.
+   Der letzte Punkt läuft über beide Spalten: er ist immer der, der
+   nicht zählbar ist (Beratung, Umfang, Zuständigkeit), und er soll
+   sich vom Rest absetzen.
+
+   Das «oder» ist ausgezeichnet, nicht versteckt. Es trägt das
+   ganze Argument dieser Folie: wo zwei Dinge verschieden viel
+   Arbeit sind, sind sie tauschbar und nicht addierbar. */
+.leistung { display: flex; flex-direction: column; flex: 1; justify-content: center; }
+.leistung-row {
+  display: grid; grid-template-columns: 260px 1fr; gap: 48px;
+  padding: 38px 0; align-items: start;
+  border-top: 1px solid; border-color: rgba(10,10,10,0.14);
+}
+.leistung-row:last-child { border-bottom: 1px solid; border-bottom-color: rgba(10,10,10,0.14); }
+.slide.ink .leistung-row { border-color: rgba(240,240,240,0.16); }
+.leistung-row .lz b { display: block; font-size: 34px; font-weight: 700; letter-spacing: var(--tracking-tight); }
+.leistung-row .lz small {
+  display: block; font-family: var(--font-mono); font-weight: 500; font-size: 15px;
+  opacity: 0.55; margin-top: 6px; letter-spacing: var(--tracking-meta); text-transform: uppercase;
+}
+.leistung-row ul {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px 52px;
+}
+.leistung-row li { font-size: 23px; line-height: 1.32; padding-left: 28px; position: relative; opacity: 0.9; }
+.leistung-row li::before { content: "→"; position: absolute; left: 0; opacity: 0.45; }
+.leistung-row li.is-wide { grid-column: 1 / -1; }
+/* Die grossen Stücke - Manual, Konzept, Markenstrategie - entstehen
+   nicht in einem Monat neben acht Posts und einer Kampagne. Sie
+   stehen deshalb abgesetzt und mit «über mehrere Monate» davor.
+   In der Monatsliste wären sie ein Versprechen, das jeden Monat
+   fällig würde - und genau daran zerbricht sonst diese Folie. */
+.leistung-row li.is-gross { margin-top: 6px; padding-top: 14px; border-top: 1px solid; border-color: rgba(10,10,10,0.10); }
+.slide.ink .leistung-row li.is-gross { border-color: rgba(240,240,240,0.14); }
+.leistung-row li.is-gross::before { top: 14px; }
+.leistung-row li.is-gross b {
+  font-family: var(--font-mono); font-weight: 700; font-size: 14px;
+  letter-spacing: var(--tracking-eyebrow); text-transform: uppercase;
+  opacity: 0.5; margin-right: 12px;
+}
+/* LIME ALS SCHRIFT GEHT AUF INK, AUF PAPER NICHT. Auf hellem Grund
+   verschwindet es - im Raum sowieso, auf dem Beamer erst recht.
+   Deshalb wird Lime hier zur Fläche mit Ink darauf. Dieselbe Lösung
+   wie bei den Prototyp-Gliedern, und dieselbe Regel: nicht die
+   Farbe aufhellen, sondern die Rolle tauschen. */
+.leistung-row em {
+  font-style: normal; font-family: var(--font-mono); font-weight: 700; font-size: 16px;
+  letter-spacing: var(--tracking-eyebrow); text-transform: uppercase;
+  background: var(--lime); color: var(--ink);
+  padding: 3px 9px 2px; border-radius: var(--radius-xs);
+  margin: 0 0.2em; vertical-align: 0.06em;
+}
+.slide.ink .leistung-row em { background: none; color: var(--lime); padding: 0 0.25em; }
+/* Die empfohlene Stufe wird nicht eingefärbt, sondern gewichtet -
+   eine Fläche würde die Bahn zur Karte machen, und genau davon will
+   dieser Typ weg. */
+.leistung-row.is-featured .lz::after {
+  content: "EMPFOHLEN"; display: inline-block; margin-top: 14px;
+  font-family: var(--font-mono); font-weight: 700; font-size: 13px;
+  letter-spacing: var(--tracking-eyebrow);
+  background: var(--lime); color: var(--ink);
+  padding: 4px 10px 3px; border-radius: var(--radius-xs);
+}
+.slide.ink .leistung-row.is-featured .lz::after { background: none; color: var(--lime); padding: 0; }
+.leistung-row.is-featured li { opacity: 1; }
+
+/* ---- t-logos · Referenzen -------------------------------------
+   Die Behandlung von kampagnons.ch: grayscale, dann contrast(0) -
+   das flacht jedes Logo auf einen einzigen Grauton ab, egal wie
+   bunt es ankommt. Erst dadurch steht die Reihe ruhig; bunte
+   Fremdlogos nebeneinander sehen immer nach Jahrmarkt aus.
+
+   Die Alpha-Kanäle bleiben, deshalb bleibt die Form erhalten.
+   Kein Umbauen von Positiv- auf Negativ-Fassungen mehr nötig. */
+.logo-wall {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 80px 96px; flex: 1; align-content: center;
+}
+.logo-wall.row-6 { grid-template-columns: repeat(6, 1fr); gap: 0 40px; }
+.logo-wall .cell { display: flex; align-items: center; justify-content: center; height: 170px; }
+
+/* Höhe über max-height statt height: so greift max-width gleichzeitig,
+   und das Bild schrumpft proportional statt zu überlaufen. Mit fixem
+   height plus max-width würde es stattdessen verzerren. */
+.logo-wall img {
+  display: block; width: auto; height: auto;
+  max-width: 100%; max-height: var(--logo-h, 80px);
+  object-fit: contain;
+  filter: grayscale(1) contrast(0) brightness(0.34);
+  opacity: 0.72;
+}
+
+/* Auf dunklem Grund muss der Ton heller sein. 1.7 statt höher, weil
+   contrast(0) alles auf 0.5 legt und alles über 2.0 in Weiss klemmt -
+   dann hat die Reihe keine Reserve mehr nach oben. */
+.slide.ink .logo-wall img { filter: grayscale(1) contrast(0) brightness(1.7); opacity: 0.85; }
+
+/* Optische Grössen, von der Website übernommen und für die Bühne
+   verdoppelt. Einzeln getunt - ein Logo mit viel Weissraum braucht mehr
+   Höhe als eine kompakte Wortmarke. Nicht vereinheitlichen. */
+.logo-wall img[data-brand="schaerli"]      { --logo-h: 68px; }
+.logo-wall img[data-brand="monopol"]       { --logo-h: 70px; }
+.logo-wall img[data-brand="demenzworld"]   { --logo-h: 70px; }
+.logo-wall img[data-brand="limeco"]        { --logo-h: 92px; }
+.logo-wall img[data-brand="alldates"]      { --logo-h: 100px; }
+.logo-wall img[data-brand="maerlitheater"] { --logo-h: 160px; }
+
+/* Sechs in einer Reihe: 1680px Inhaltsbreite geteilt durch sechs sind
+   240px pro Spalte. Bei voller Höhe wird das breiteste Logo 304px breit
+   und läuft in den Nachbarn. Deshalb hier kleiner. */
+.logo-wall.row-6 img { max-height: calc(var(--logo-h, 80px) * 0.62); }
+
+/* Limeco verliert bei contrast(0) zu viel Zeichnung - dieselbe Ausnahme
+   wie auf der Website. Nur auf hellem Grund: auf Ink zählt Gleichmass
+   mehr als Binnenzeichnung, und contrast(0.5) plus Aufhellung würde die
+   hellen Bildteile in Weiss klemmen. */
+.logo-wall img[data-brand="limeco"] { filter: grayscale(1) contrast(0.5) brightness(0.68); }
+
+/* ---- KI-Fluss · unter der Leistungsübersicht -------------------
+   Das Mechanik-Bild unserer Arbeitsweise: links wirft die Maschine
+   Menge aus, in der Mitte entscheidet ein Mensch, rechts geht das
+   raus, was er verantwortet. Die Punkte laufen endlos - aber sie
+   werden weniger, nachdem sie durch die Raute sind. Genau das ist
+   die Aussage: KI erzeugt, der Mensch wählt aus. */
+.aiflow { display: grid; grid-template-columns: 1fr 88px 1fr; align-items: center; gap: 28px; margin-top: 44px; }
+.aiflow-side { display: flex; flex-direction: column; gap: 6px; }
+.aiflow-side.is-right { text-align: right; align-items: flex-end; }
+.aiflow-side .lab {
+  font-family: var(--font-mono); font-weight: 500; font-size: 13px;
+  letter-spacing: var(--tracking-eyebrow); text-transform: uppercase; opacity: 0.55;
+}
+.aiflow-side .val { font-size: 26px; font-weight: 700; }
+
+/* Die Spur muss auf beiden Seiten die volle Spaltenbreite haben.
+   Ohne align-self fällt sie in der rechten Spalte auf null zusammen -
+   align-items: flex-end schrumpft jedes Kind auf seine Inhaltsbreite,
+   und eine Linie ohne Inhalt hat keine. */
+.aiflow-lane {
+  position: relative; align-self: stretch;
+  height: 3px; background: rgba(10,10,10,0.14); border-radius: 2px;
+  margin-top: 14px;
+}
+.slide.ink .aiflow-lane { background: rgba(240,240,240,0.18); }
+
+/* Kleine Raketen statt Punkte. Als Maske über currentColor, damit sie
+   auf heller wie auf dunkler Folie automatisch die richtige Farbe
+   haben - ein eingefärbtes SVG müsste man zweimal pflegen. */
+.aiflow-lane i {
+  position: absolute; top: 50%; width: 20px; height: 12px; margin-top: -6px;
+  background: currentColor;
+  -webkit-mask: var(--rakete) no-repeat center / contain;
+  mask: var(--rakete) no-repeat center / contain;
+  opacity: 0;
+}
+.active .aiflow-lane i { animation: aiflow-run 3.4s linear infinite; animation-delay: var(--fd, 0ms); }
+@keyframes aiflow-run {
+  0%   { left: -2%;  opacity: 0; transform: scale(0.7); }
+  8%   {             opacity: 0.8; transform: scale(1); }
+  92%  {             opacity: 0.8; transform: scale(1); }
+  100% { left: 100%; opacity: 0; transform: scale(0.7); }
+}
+/* Rechts fliegen weniger und langsamer - das ist die Aussage der
+   Folie, nicht Dekoration: aussortiert wird in der Mitte. */
+.aiflow-lane.is-out i { animation-duration: 4.6s; }
+
+.aiflow-gate {
+  width: 88px; height: 88px; position: relative;
+  display: flex; align-items: center; justify-content: center;
+}
+.aiflow-gate::before {
+  content: ""; position: absolute; inset: 14px;
+  border: 2px solid currentColor; transform: rotate(45deg);
+  border-radius: 3px;
+}
+.active .aiflow-gate::before { animation: aiflow-pulse 3.4s var(--ease-in-out) infinite; }
+@keyframes aiflow-pulse {
+  0%, 100% { transform: rotate(45deg) scale(1); opacity: 0.55; }
+  50%      { transform: rotate(45deg) scale(1.12); opacity: 1; }
+}
+.aiflow-gate span {
+  font-family: var(--font-mono); font-weight: 500; font-size: 12px;
+  letter-spacing: var(--tracking-eyebrow); text-transform: uppercase;
+  position: absolute; top: 100%; margin-top: 14px; white-space: nowrap;
+}
+
+/* ---- t-problems · die Klagen ----------------------------------
+   Sätze, wie ein Inhaber sie selbst sagt - in Anführungszeichen,
+   weil es Zitate sind und keine Behauptungen von uns. Rechts steht,
+   welche Disziplin das löst. Sie tauchen nacheinander auf; der
+   Effekt ist das Aufsummieren, nicht die einzelne Zeile.
+   Verbot: keine Marketingsprache in den Klagen. Wer «mangelnde
+   Sichtbarkeit» schreibt, hat die Folie nicht verstanden. */
+.problems { display: flex; flex-direction: column; flex: 1; justify-content: center; max-width: 1560px; }
+.problem {
+  display: grid; grid-template-columns: 1fr 200px; gap: 48px;
+  align-items: baseline; padding: 21px 0; position: relative;
+}
+.problem::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: currentColor; opacity: 0.10;
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 900ms var(--ease-out); transition-delay: var(--d, 0ms);
+}
+.active .problem::before { transform: scaleX(1); }
+.problem q { font-size: 31px; line-height: 1.3; quotes: "«" "»"; }
+
+/* Ausnahme von der Ein-Marker-Regel, bewusst und begründet: hier
+   markiert Lime nicht EINE Aussage, sondern in jeder Zeile dieselbe
+   Stelle - den Punkt, an dem die Klage weh tut. Weil alle Zeilen
+   gleich gebaut sind, wird daraus kein Hervorheben, sondern eine
+   Lesekante: das Auge springt von Kern zu Kern.
+   Gilt nur für diesen Typ. Auf einer Folie mit gemischten Elementen
+   bleibt es bei einem Marker. */
+.problem q .hl { padding: 0 0.04em; }
+.problem .fix {
+  font-family: var(--font-mono); font-weight: 500; font-size: 14px;
+  letter-spacing: var(--tracking-eyebrow); text-transform: uppercase;
+  opacity: 0.5; text-align: right;
+}
+
+/* ---- t-proof · drei Zahlen, drei Disziplinen -------------------
+   Für den Moment, in dem eine Behauptung Belege braucht. Pro Spalte
+   eine Disziplin, eine grosse Zahl, ein Satz, eine Quelle.
+   Die Quelle steht direkt unter der Zahl und nicht in einer Fussnote:
+   eine Zahl, deren Herkunft man suchen muss, wirkt erfunden.
+   Verbot: nie mehr als drei Spalten, nie eine Zahl ohne Studie,
+   Jahr und Umfang. */
+.proofs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 72px; flex: 1; align-content: center; }
+.proof { position: relative; padding-top: 30px; }
+.proof::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: currentColor;
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 1000ms var(--ease-out); transition-delay: var(--d, 0ms);
+}
+.active .proof::before { transform: scaleX(1); }
+.proof .disc {
+  font-family: var(--font-mono); font-weight: 500; font-size: 14px;
+  letter-spacing: var(--tracking-eyebrow); text-transform: uppercase;
+  opacity: 0.55; display: block; margin-bottom: 18px;
+}
+.proof .fig {
+  font-family: var(--font-mono); font-weight: 500; font-size: 108px; line-height: 0.95;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+}
+.proof p { font-size: 23px; line-height: 1.38; margin-top: 22px; opacity: 0.85; }
+.proof .src {
+  display: block; margin-top: 22px;
+  font-family: var(--font-mono); font-weight: 500; font-size: 14px;
+  line-height: 1.4; opacity: 0.45;
+}
+
+/* ---- t-gap · Nachfrage gegen Angebot --------------------------
+   Zwei Balken pro Frage: was die Leute wollen, was die Betriebe
+   liefern. Der Abstand dazwischen IST die Aussage - deshalb liegen
+   sie direkt untereinander und nicht nebeneinander.
+   Verbot: keine Zahl ohne Studie, Jahr und Erhebungsart. */
+.gaps { display: flex; flex-direction: column; flex: 1; justify-content: center; gap: 54px; max-width: 1560px; }
+.gap-group h4 { font-size: 26px; margin-bottom: 20px; }
+.gap-row { display: grid; grid-template-columns: 420px 1fr 108px; gap: 32px; align-items: center; padding: 7px 0; }
+.gap-row .lab { font-size: 19px; opacity: 0.75; }
+.gap-bar {
+  height: 34px; border-radius: 3px; background: currentColor;
+  width: var(--w, 50%); opacity: 0.26;
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 1200ms var(--ease-out);
+  transition-delay: var(--d, 0ms);
+}
+.active .gap-bar { transform: scaleX(1); }
+.gap-row.is-want .gap-bar { opacity: 1; }
+.gap-row .val {
+  font-family: var(--font-mono); font-weight: 500; font-size: 30px; text-align: right;
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+}
+
+/* ---- t-money · was gleiches Geld bringt -----------------------
+   Zwei Balken, gleiches Budget, verschiedener Output. Der Vergleich
+   ist die ganze Folie - deshalb keine Achse, keine Skala, nur die
+   beiden Längen zueinander.
+
+   Das Wort ist mit Absicht **Output** und nicht «Ertrag». Ertrag ist
+   Geld, das der Kunde einnimmt - das können wir nicht versprechen.
+   Output ist, was auf seinem Tisch landet, und das können wir.
+
+   Verbot: keine Zahl ohne Herleitung in der Fusszeile. Deshalb
+   gehört `.money-src` zum Typ und nicht zur einzelnen Folie. */
+/* Seit dem 17.08.2026 trägt der Typ nur noch Headline und zwei Balken -
+   Kicker und Quellenzeile sind gestrichen. Deshalb dürfen die Balken
+   kräftiger werden: bei zwei dünnen Streifen auf 1080 px Höhe sieht die
+   Folie leer aus, und eine leere Folie liest sich als schwaches
+   Argument. */
+.money { display: flex; flex-direction: column; justify-content: center; flex: 1; gap: 76px; max-width: 1500px; }
+.money-row { display: grid; grid-template-columns: 300px 1fr auto; gap: 40px; align-items: center; }
+.money-row .lab { font-size: 24px; font-weight: 600; }
+.money-row .lab small { display: block; font-family: var(--font-mono); font-weight: 500; font-size: 15px; opacity: 0.5; margin-top: 6px; letter-spacing: var(--tracking-meta); }
+.money-bar {
+  height: 72px; border-radius: 4px; background: currentColor;
+  width: var(--w, 50%); opacity: 0.28;
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 1400ms var(--ease-out);
+  transition-delay: var(--d, 0ms);
+}
+.active .money-bar { transform: scaleX(1); }
+/* Der «Heute»-Balken ist Lime, der Vergleichsbalken bleibt der
+   Grundton der Folie - dieselbe Rolle wie der Marker im Text. Als
+   weisse Fläche auf Ink war er nicht von der Folie zu unterscheiden.
+   Zwei Lime-Balken wären eine Skala, kein Vergleich. */
+.money-row.is-now .money-bar { background: var(--lime); opacity: 1; }
+.money-row .amt {
+  font-family: var(--font-mono); font-weight: 500; font-size: 34px;
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+  white-space: nowrap;
+}
+.money-src { font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-small); opacity: 0.5; margin-top: 8px; }
+
+/* ---- t-universe · breiter -------------------------------------
+   Erste der drei Folien «Breiter. Besser. Schneller.» Links der
+   Raum von vor zehn Jahren: ein geschlossener Kreis. Rechts
+   derselbe Kreis - gleich gross, in derselben Farbe - und um ihn
+   herum Ringe, die über den Rand der Folie hinauslaufen.
+
+   Dass der Lime-Kreis auf beiden Seiten identisch ist, ist das
+   ganze Argument. Wer ihn rechts kleiner macht, zerstört es: dann
+   sieht man zwei verschiedene Kreise statt einen, der zum Punkt
+   geworden ist.
+
+   Die Ringe werden vom Kasten geschnitten, und das ist Absicht.
+   Ein Ring, der ganz ins Bild passt, hat eine Grenze - und Grenze
+   ist genau das Gegenteil dieser Folie. Verbot: `overflow:
+   visible` auf `.uni-box.is-open`. */
+.universe {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  grid-template-rows: 1fr auto;
+  column-gap: 96px; row-gap: 26px;
+  flex: 1; align-items: center; min-height: 0;
+}
+.uni-box { position: relative; height: 384px; display: grid; place-items: center; }
+.uni-box.is-open { overflow: hidden; }
+.uni-core {
+  width: 186px; height: 186px; border-radius: 50%;
+  border: 2px solid var(--lime); position: relative; z-index: 2;
+}
+/* Geschlossen heisst gefüllt: der alte Raum war nicht nur klein,
+   er war auch dicht. Rechts fällt die Füllung weg. */
+.uni-core.is-closed { background: rgba(212, 232, 74, 0.12); }
+.uni-ring {
+  position: absolute; width: 186px; height: 186px; border-radius: 50%;
+  border: 1px solid currentColor;
+  opacity: 0; transform: scale(0.3);
+  transition: transform 1500ms var(--ease-out), opacity 1500ms var(--ease-out);
+  transition-delay: var(--d, 0ms);
+}
+.active .uni-ring { opacity: var(--o, 0.3); transform: scale(var(--s, 2)); }
+
+/* Der Absatz unter der Grafik braucht Luft: die Kleinschrift der
+   Beschriftung sitzt sonst direkt auf ihm. */
+.t-universe .kicker, .t-pick .kicker { margin-top: 56px; }
+/* Der Satz auf der Universum-Folie muss auf EINE Zeile. Bei 30 px
+   bricht er, und «können.» steht allein auf der zweiten - das liest
+   sich wie ein Versehen. Kleiner setzen und den Platz oben aus der
+   Grafik nehmen, nicht aus dem Abstand. */
+.t-universe .kicker { color: var(--paper-92); font-size: 26px; }
+
+/* ---- t-pick · besser ------------------------------------------
+   Zweite der drei Folien. Links ein Punkt, rechts ein Feld - und
+   in beiden Fällen geht genau einer raus. Der gewählte Punkt ist
+   Lime und kommt zuletzt, nach allen anderen: erst das Feld, dann
+   die Entscheidung. */
+.pick {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  grid-template-rows: 1fr auto;
+  column-gap: 96px; row-gap: 26px;
+  flex: 1; align-items: center; min-height: 0;
+}
+.pick-box { position: relative; height: 424px; display: grid; place-items: center; }
+.pick-grid { display: grid; grid-template-columns: repeat(var(--c, 1), auto); gap: 44px; }
+.pick-grid i {
+  width: 54px; height: 54px; border-radius: 50%;
+  border: 1px solid currentColor; opacity: 0; transform: scale(0.4);
+  transition: transform 620ms var(--ease-out), opacity 620ms var(--ease-out);
+  transition-delay: var(--d, 0ms);
+}
+.active .pick-grid i { opacity: 0.32; transform: scale(1); }
+.pick-grid i.is-chosen { border-color: var(--lime); background: var(--lime); }
+.active .pick-grid i.is-chosen { opacity: 1; transform: scale(1.4); }
+
+/* Beschriftung für beide Typen. Sie steht in der zweiten Gitterzeile
+   und nicht im Bild - im Bild wäre sie bei `.uni-box.is-open` vom
+   Beschnitt betroffen. */
+.uni-lab { font-size: 24px; font-weight: 600; text-align: center; }
+.uni-lab small {
+  display: block; font-family: var(--font-mono); font-weight: 500;
+  font-size: 15px; opacity: 0.55; margin-top: 8px;
+  letter-spacing: var(--tracking-meta); text-transform: uppercase;
+}
+
+/* ---- t-bigbang · exponentielle Kreativität ---------------------
+   Zwei Kurven auf einer Achse ohne Zahlen. Die flache wird zuerst
+   gezogen, die exponentielle danach - in dieser Reihenfolge liest
+   man den Unterschied, in der anderen sieht man zwei Linien.
+
+   Der Urknall am Kurvenende läuft in der Dauerschleife und feuert
+   alle 2,6 Sekunden - Simons Entscheid vom 18.08.2026. Der erste
+   Schlag kommt erst, wenn die Kurve fertig gezogen ist (1,7 s), von
+   da an im Takt.
+   Die Pause steckt im Keyframe, nicht in der Dauer: die drei Ringe
+   laufen in 55 % der Zykluszeit aus und stehen den Rest unsichtbar
+   still. Wer stattdessen die Dauer verlängert, bekommt drei zähe
+   Ringe statt eines Schlags.
+
+   Lime ist hier Linie, nicht Fläche - dieselbe Rolle wie der
+   Marker im Text: sie zeigt, worauf es ankommt. */
+.bang { flex: 1; display: grid; place-items: center; min-height: 0; }
+.bang svg { width: 100%; height: 100%; overflow: visible; }
+.bang-axes line { stroke: currentColor; stroke-width: 1; opacity: 0.25; }
+.bang-ax {
+  font-family: var(--font-mono); font-weight: 500; font-size: 14px;
+  letter-spacing: var(--tracking-eyebrow); fill: currentColor; opacity: 0.45;
+}
+.bang-lab {
+  font-family: var(--font-mono); font-weight: 600; font-size: 19px;
+  letter-spacing: var(--tracking-eyebrow); fill: currentColor;
+}
+.bang-lab.is-then { opacity: 0.45; }
+.bang-lab.is-now { fill: var(--lime); opacity: 0; transition: opacity 500ms var(--ease-out) 1500ms; }
+.active .bang-lab.is-now { opacity: 1; }
+.bang-line {
+  fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round;
+  stroke-dasharray: 1000; stroke-dashoffset: 1000;
+  transition: stroke-dashoffset 1600ms var(--ease-out);
+}
+.active .bang-line { stroke-dashoffset: 0; }
+.bang-line.is-then { stroke-width: 2.5; opacity: 0.38; transition-delay: 350ms; }
+.bang-line.is-now { stroke: var(--lime); stroke-width: 4; transition-delay: 700ms; }
+.bang-core {
+  fill: var(--lime); opacity: 0;
+  transition: opacity 400ms var(--ease-out) 1600ms;
+}
+.active .bang-core { opacity: 1; }
+.bang-wave {
+  fill: none; stroke: var(--lime); stroke-width: 2;
+  transform-box: fill-box; transform-origin: center;
+  opacity: 0; transform: scale(0.35);
+}
+.active .bang-wave {
+  animation: bang-wave 2600ms var(--ease-out) var(--bd, 0ms) infinite;
+}
+@keyframes bang-wave {
+  0%   { opacity: 0.85; transform: scale(0.35); }
+  55%  { opacity: 0;    transform: scale(7); }
+  100% { opacity: 0;    transform: scale(7); }
+}
+
+/* Die Kurvenfolie trägt einen Absatz unter der Grafik. Ohne diese
+   Regel klebt er am Rand. 26 px statt 30, damit er auf EINE Zeile
+   geht - dieselbe Regel wie auf der Universum-Folie: ein Absatz, der
+   mit zwei Wörtern auf der zweiten Zeile endet, liest sich wie ein
+   Versehen. */
+.t-bigbang .kicker { margin-top: 16px; color: var(--paper-92); font-size: 26px; }
+
+/* ---- t-triangle · gut, günstig, schnell -----------------------
+   Das bekannteste Bild der Branche, und deshalb braucht es keine
+   Erklärung. Links das gepunktete Wunsch-Dreieck und darin das
+   verzogene, das tatsächlich herauskam. Rechts dasselbe Dreieck,
+   geschlossen.
+
+   Der gepunktete Umriss links ist Pflicht. Ohne ihn sieht man
+   rechts nur ein anderes Dreieck statt dasselbe, das jetzt
+   zusammengeht - und damit fällt das ganze Argument.
+
+   Die Ecke, die sich verzieht, ist GÜNSTIG. Sie ist links auf 0.3
+   heruntergenommen, nicht weggelassen: eine fehlende Ecke wäre ein
+   Fehler im Bild, eine blasse ist ein Versprechen, das nicht
+   eingelöst wurde. */
+.tri { flex: 1; display: grid; place-items: center; min-height: 0; }
+.tri svg { width: 100%; height: 100%; }
+.tri-ghost {
+  fill: none; stroke: currentColor; stroke-width: 1.5;
+  stroke-dasharray: 3 9; opacity: 0.28;
+}
+.tri-shape {
+  fill: none; stroke-width: 4; stroke-linejoin: round; stroke-linecap: round;
+  stroke-dasharray: 1000; stroke-dashoffset: 1000;
+  transition: stroke-dashoffset 1500ms var(--ease-out);
+}
+.active .tri-shape { stroke-dashoffset: 0; }
+.tri-shape.is-then { stroke: currentColor; opacity: 0.5; transition-delay: 350ms; }
+.tri-shape.is-now  { stroke: var(--lime); transition-delay: 1000ms; }
+.tri-dot { fill: currentColor; opacity: 0; transition: opacity 400ms var(--ease-out) 1400ms; }
+.active .tri-dot { opacity: 0.5; }
+.tri-dot.is-lit { fill: var(--lime); transition: opacity 320ms var(--ease-out) var(--dd, 1500ms); }
+.active .tri-dot.is-lit { opacity: 1; }
+/* Deckkraft über `fill-opacity`, NICHT über `opacity`: die linken
+   drei Ecken lassen ihre `opacity` von SMIL fahren, und eine
+   CSS-Regel auf derselben Eigenschaft wäre ein Kampf, den mal die
+   eine und mal die andere Seite gewinnt. */
+.tri-corner {
+  font-family: var(--font-mono); font-weight: 600; font-size: 20px;
+  letter-spacing: var(--tracking-eyebrow); fill: currentColor; fill-opacity: 0.85;
+}
+.tri-corner.is-cycle { fill-opacity: 1; }
+.tri-corner.is-off { fill-opacity: 0.3; }
+.tri-scene { font-size: 26px; font-weight: 700; fill: currentColor; }
+.tri-scene-sub {
+  font-family: var(--font-mono); font-weight: 500; font-size: 15px;
+  letter-spacing: var(--tracking-meta); fill: currentColor; opacity: 0.55;
+}
+.t-triangle .kicker { margin-top: 6px; color: var(--paper-92); }
+
+/* ---- t-proto · Prototyping ------------------------------------
+   Zwei Ketten untereinander, dieselben Glieder in anderer Ordnung.
+   Der Vergleich funktioniert nur, wenn beide Ketten links bündig
+   starten - sonst vergleicht das Auge Längen statt Reihenfolgen.
+
+   Das Lime sitzt auf genau einem Glied: dem Prototyp. Er ist das
+   neue Glied, alles andere gab es vorher auch.
+
+   Verbot: keine Dauer an den Gliedern. Die Kette zeigt die
+   Reihenfolge, nicht das Tempo - eine Zeitangabe wäre eine
+   Aufwandsschätzung. */
+/* Die Beschriftung steht ÜBER der Kette, nicht daneben. Bei sieben
+   Gliedern frisst eine Spalte links 290 px, und die Kette müsste in
+   eine Schriftgrösse, die im Raum niemand mehr liest. */
+.proto { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 84px; }
+.proto-row { display: flex; flex-direction: column; gap: 22px; align-items: flex-start; }
+.proto-lab { font-size: 25px; font-weight: 600; display: flex; align-items: baseline; gap: 16px; }
+.proto-lab small {
+  font-family: var(--font-mono); font-weight: 500; font-size: 15px;
+  opacity: 0.55; letter-spacing: var(--tracking-meta); text-transform: uppercase;
+}
+/* Die längere Kette («früher») hat sieben Glieder und gibt das Mass
+   vor. Wer ein achtes ergänzt, verkleinert die Schrift - oder lässt
+   es. Umbrechen darf die Kette nie: eine Kette in zwei Zeilen liest
+   sich als zwei Ketten. */
+.proto-chain { display: flex; align-items: center; flex-wrap: nowrap; gap: 28px; }
+.proto-chain i {
+  position: relative;
+  font-style: normal; font-size: 26px; font-weight: 600; white-space: nowrap;
+  padding: 22px 24px; border: 1px solid currentColor; border-radius: var(--radius-sm);
+  opacity: 0.55;
+}
+/* Der Pfeil sitzt in der Lücke ZWISCHEN den Gliedern, nicht im
+   Glied. Absolut auf `left: 100%` und um die halbe Breite
+   zurückgeschoben - im Textfluss läge er innerhalb des Rahmens und
+   sähe aus wie Teil des Wortes. */
+.proto-chain i:not(:last-child)::after {
+  content: "→"; position: absolute; left: 100%; top: 50%;
+  transform: translate(-50%, -50%); width: 28px; text-align: center;
+  font-weight: 500; opacity: 0.45;
+}
+.proto-chain i.is-paper { border-style: dashed; }
+.proto-chain i.is-late { border: 0; opacity: 0.35; padding-left: 0; }
+/* LIME ALS FLÄCHE - der zweite begründete Sonderfall im System,
+   neben dem Namen auf der Portrait-Folie. Grund ist Lesbarkeit, nicht
+   Geschmack: Lime-Konturen mit Lime-Schrift auf Paper verschwinden im
+   Raum, Simon hat es am 18.08.2026 auf dem Beamer nicht mehr lesen
+   können. Volle Fläche mit Ink darauf ist der stärkste Kontrast, den
+   das Zweiton-System hergibt.
+   Taugt nicht als Präzedenzfall: überall sonst bleibt Lime Marker. */
+.proto-chain i.is-proto {
+  background: var(--lime); border-color: var(--lime);
+  color: var(--ink); opacity: 1;
+}
+.proto-row.is-now .proto-chain i { opacity: 0.85; }
+.proto-row.is-now .proto-chain i.is-proto { opacity: 1; }
+
+/* ---- t-table.is-roomy · grössere Tabelle ----------------------
+   Für Tabellen mit sechs Zeilen oder weniger. Bei --fs-body bleibt
+   die untere Hälfte der Folie leer, und eine halb leere Folie liest
+   sich als schwaches Argument. Ab sieben Zeilen bricht es um -
+   dann bleibt es beim Standard. */
+.t-table table.is-roomy tbody td { font-size: 29px; line-height: 1.28; padding: 27px 32px 27px 0; }
+.t-table table.is-roomy thead th { font-size: 15px; padding-bottom: 22px; }
+/* Linke Spalte fett. Sie ist die Behauptung, die rechte ist die
+   Übersetzung - im gleichen Gewicht liest man beide Spalten von
+   vorne, statt links zu scannen und rechts nachzulesen. */
+.t-table table.is-roomy tbody td:first-child { font-weight: 700; }
+
+
+/* ---- t-quarter · ein volles Quartal — AUSGEBAUT 17.08.2026 -----
+   Der Typ ist am 17.08.2026 auf Simons Entscheid aus dem Deck
+   genommen worden, zusammen mit seiner Folie. Das CSS ist mit
+   entfernt, damit kein toter Code im System liegt.
+
+   Die Idee ist nicht verloren: die freistehende Vorfassung liegt in
+   `Kampagnons/pricing/folie-volles-quartal.html`. Wer sie
+   zurückholt, holt sie von dort - und rechnet damit, dass sie noch
+   in Ergebnissen zählt, was das Preismodell nicht mehr tut.
+   ---------------------------------------------------------------- */
+
+/* ---- t-agentmap · die Karte der Agentur -----------------------
+   Die Innenansicht des Systems: wer denkt, wer macht, wer prüft,
+   und dass alles über einen Menschen zum Kunden geht.
+
+   Drei Entscheidungen, die man nicht rückgängig machen sollte:
+
+   1. FESTE KOORDINATEN. Das interne Werkzeug
+      (`Kampagnons KI Agentur/agentur-karte.html`) rechnet sein
+      Layout über eine Kräftesimulation und sieht bei jedem Öffnen
+      anders aus. Auf einer Folie ist das ein Fehler: Bildschirm und
+      PDF zeigten dann verschiedene Bilder. Hier steht jeder Knoten,
+      wo er steht.
+   2. KEINE KUNDENNAMEN. Ein Kunde in einem Kundendeck ist eine
+      Referenz und braucht eine Freigabe. Die sieben echten Knoten
+      sind deshalb zu einem Feld «Kunde» zusammengezogen.
+   3. KEIN LIME. Das interne Werkzeug färbt die Prüfer lime. Hier
+      unterscheidet der Doppelring, nicht die Farbe - sonst bricht
+      der Zweiton, und Lime wäre Fläche statt Marker.
+
+   Verbot: keine Namen der Rollen auf der Folie. «Nils» sagt einem
+   Kunden nichts, «Werbetexter» alles. Und nie mehr Knoten
+   dazuzeichnen, ohne die Abstände neu zu setzen. */
+.agentmap { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; }
+.agentmap svg { width: 100%; height: 100%; overflow: visible; }
+
+.map-band {
+  font-family: var(--font-mono); font-weight: 500; font-size: 15px;
+  letter-spacing: var(--tracking-eyebrow); fill: currentColor; opacity: 0.3;
+}
+/* Zwei Arten von Verbindung, und der Unterschied muss sichtbar sein:
+   eine Übergabe ist ein Weg, eine Cluster-Nachbarschaft nur ein
+   «die sitzen zusammen». Beides gleich stark gezeichnet ergibt Brei,
+   nur die Übergaben gezeichnet ergibt eine Karte, die dünner aussieht
+   als das System ist. */
+.map-edge { fill: none; stroke: currentColor; stroke-width: 1; opacity: 0.3; }
+.map-edge.is-team { opacity: 0.12; }
+.map-edge.is-gate { stroke-width: 1.5; opacity: 0.5; stroke-dasharray: 5 5; }
+
+/* Die drei Zustände. Umriss denkt, Fläche macht, Doppelring prüft. */
+.map-node { fill: currentColor; stroke: currentColor; stroke-width: 1.5; }
+.map-node.is-denkt { fill: none; }
+/* Der Doppelring ist das einzige Unterscheidungsmerkmal der Prüfer -
+   er muss auf einem Beamer noch zu sehen sein. Unter 0.75 verschwindet
+   er auf Ink, und dann sieht die Folie aus, als prüfe niemand. */
+.map-node.is-ring  { fill: none; opacity: 0.8; }
+.map-node.is-kunde { fill: none; stroke-dasharray: 4 4; opacity: 0.7; }
+
+.map-lab {
+  font-family: var(--font-mono); font-weight: 500; font-size: 15px;
+  letter-spacing: 0.06em; fill: currentColor; opacity: 0.72; text-anchor: middle;
+}
+.map-lab.is-mensch { font-size: 19px; opacity: 1; }
+
+/* Die Legende erklärt die drei Zustände. Ohne sie ist die Karte
+   ein hübsches Muster - mit ihr ist sie ein Argument. */
+.map-legend {
+  display: flex; gap: 44px; align-items: center; margin-top: 20px;
+  font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-small);
+  opacity: 0.7;
+}
+.map-legend span { display: flex; align-items: center; gap: 12px; }
+.map-legend i {
+  width: 14px; height: 14px; border-radius: 50%; position: relative;
+  border: 1.5px solid currentColor; flex: 0 0 auto;
+}
+.map-legend .is-macht i  { background: currentColor; }
+
+/* «prüft» muss in der Legende genau das Zeichen sein, das in der Karte
+   steht: eine gefüllte Scheibe MIT Ring drumherum, nicht ein grosser
+   Vollkreis. Der Ring ist der Rahmen von `i`, die Scheibe das
+   Pseudo-Element - mit Abstand dazwischen, sonst verschmelzen beide zu
+   einem Punkt und die Legende erklärt etwas anderes als das Bild.
+
+   Und das Zeichen ist GRÖSSER als die anderen, weil der Prüferknoten
+   in der Karte grösser ist (r 8 plus Ring auf r 14). Alle Zeichen
+   gleich gross zu machen wäre gepflegter und wäre falsch.
+   Das Verhältnis Scheibe zu Ring ist aus der Karte übernommen:
+   12 zu 19 hier, 16 zu 25 dort. */
+.map-legend .is-prueft i { width: 22px; height: 22px; background: none; }
+.map-legend .is-prueft i::after {
+  content: ""; position: absolute; inset: 3.5px;
+  border-radius: 50%; background: currentColor;
+}
+.map-legend .is-kunde i  { border-radius: 2px; border-style: dashed; }
+
+/* Die Cluster-Nachbarschaft ist eine Linie, kein Knoten - ihr Zeichen
+   in der Legende muss deshalb auch eine Linie sein und dieselbe
+   Deckkraft haben wie in der Karte. */
+.map-legend .is-team i {
+  width: 26px; height: 0; border: 0; border-radius: 0;
+  border-top: 1px solid currentColor; opacity: 0.35;
+}
+
+/* ---- Silhouetten-Ebene für die Leitidee -----------------------
+   Ein Bild oder Video taucht aus dem Schwarz auf, ohne den Claim
+   anzugreifen: es sitzt UNTER der Schrift, ist stark abgedunkelt und
+   läuft an den Rändern weich aus. Der Claim bleibt reines Paper auf
+   Ink - lesbar bleibt er, weil das Bild nie heller wird als 22 %.
+
+   Wer die Deckkraft hochzieht, gewinnt ein Bild und verliert einen
+   Claim. Das ist kein guter Tausch. */
+.veil {
+  position: absolute; inset: 0; z-index: 0; overflow: hidden;
+  pointer-events: none;
+}
+.veil img, .veil video {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; display: block;
+  opacity: 0; filter: grayscale(1) contrast(1.15) brightness(0.9);
+  transform: scale(1.08);
+  transition: opacity 2600ms var(--ease-out) 900ms, transform 9s var(--ease-out) 900ms;
+}
+.active .veil img, .active .veil video { opacity: 0.22; transform: scale(1); }
+
+/* Auf dunklem Grund wird umgekehrt: das Ausgangsmaterial ist schwarz
+   auf weiss, ungefiltert würde es die Folie aufreissen. invert(1)
+   dreht es zu hellen Figuren auf Schwarz - dann legt sich nur noch
+   die Silhouette als Schimmer über das Ink, und der Claim bleibt der
+   hellste Punkt der Folie. */
+.slide.ink .veil img, .slide.ink .veil video {
+  filter: grayscale(1) invert(1) contrast(1.15);
+}
+.slide.ink.active .veil img, .slide.ink.active .veil video { opacity: 0.3; }
+/* Weiche Kanten nach allen Seiten, damit nichts anschneidet und der
+   Übergang ins Ink nicht als Rechteck sichtbar wird. */
+.veil::after {
+  content: ""; position: absolute; inset: 0;
+  background:
+    radial-gradient(70% 70% at 50% 55%, rgba(10,10,10,0) 0%, rgba(10,10,10,0.55) 62%, rgba(10,10,10,0.95) 100%),
+    linear-gradient(to bottom, rgba(10,10,10,0.75) 0%, rgba(10,10,10,0) 28%, rgba(10,10,10,0) 68%, rgba(10,10,10,0.85) 100%);
+}
+/* Alles ausser dem Schleier bekommt eine eigene Ebene über dem Bild.
+   Das Lockup ist ausgenommen: es sitzt absolut in der Ecke, und ein
+   `position: relative` von hier würde es in den Flex-Fluss kippen -
+   dann steht es auf der Leitidee unten mittig statt oben rechts. Es
+   liegt mit z-index 5 ohnehin über dem Schleier. */
+.slide.has-veil > *:not(.veil):not(.cm) { position: relative; z-index: 2; }
+
+/* =========================================================
+   REFERENZ UND PROJEKT
+   Die vier Typen, ohne die eine Agenturpräsentation
+   Behauptungen verkauft statt Belege.
+   ========================================================= */
+
+/* ---- t-case · Referenz-Case -----------------------------------
+   Ein benannter Kunde, die Aufgabe, drei Zeilen Weg, eine Zahl.
+   Mehr nicht. Wer den ganzen Prozess erzählt, hat die Folie
+   verloren - der Prozess gehört ins Gespräch, nicht aufs Blatt.
+   Verbot: kein Case ohne benannten Kunden, keine zweite Zahl. */
+.case { display: grid; grid-template-columns: 1fr 620px; gap: 80px; flex: 1; align-items: start; }
+.t-case.noimage .case { grid-template-columns: 1fr; }
+.t-case.noimage .case-fig { display: none; }
+
+.case-client {
+  font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-meta);
+  letter-spacing: var(--tracking-eyebrow); text-transform: uppercase;
+  opacity: 0.55; display: block; margin-bottom: 22px;
+}
+.case-task { font-size: 64px; font-weight: 700; line-height: 1.06; letter-spacing: var(--tracking-tight); max-width: 900px; }
+
+.case-steps { display: flex; flex-direction: column; margin-top: 44px; }
+.case-step { display: grid; grid-template-columns: 52px 1fr; gap: 20px; align-items: baseline; padding: 15px 0; }
+.case-step .n { font-size: var(--fs-num); opacity: 0.45; }
+.case-step p { font-size: var(--fs-body); line-height: 1.35; }
+
+/* Die Trennlinie zieht sich auf und trennt Weg von Ergebnis.
+   Ohne sie liest sich die Zahl wie ein vierter Schritt. */
+.case-rule {
+  height: 2px; background: currentColor; opacity: 0.16; margin: 34px 0 30px;
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 1000ms var(--ease-out); transition-delay: var(--d, 0ms);
+}
+.active .case-rule { transform: scaleX(1); }
+
+.case-result { display: flex; align-items: baseline; gap: 36px; }
+.case-result .val {
+  font-family: var(--font-mono); font-weight: 500; font-size: 140px; line-height: 0.9;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+}
+.case-result .lab { font-size: 24px; line-height: 1.3; max-width: 480px; }
+
+.case-fig {
+  position: relative; width: 100%; aspect-ratio: 4 / 5;
+  overflow: hidden; border: var(--border-ink); border-radius: var(--radius-sm);
+  background: rgba(10,10,10,0.06);
+}
+.case-fig img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.slide.ink .case-fig { border-color: var(--paper); background: rgba(240,240,240,0.08); }
+
+/* ---- t-works · Umsetzungsraster -------------------------------
+   Zeigt, dass eine Idee über Kanäle trägt. Pro Kachel nur Bild und
+   Kanalname - kein Satz, kein Argument. Wer erklären muss, warum
+   eine Kachel dabei ist, hat die falsche Kachel.
+   Verbot: nie als Sammelbecken für übrige Bilder. */
+.works { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; flex: 1; }
+.works.rows-2 { grid-template-rows: repeat(2, 1fr); }
+.work { display: flex; flex-direction: column; min-height: 0; }
+.work-fig {
+  flex: 1; min-height: 0; position: relative; overflow: hidden;
+  border-radius: var(--radius-sm); background: rgba(10,10,10,0.07);
+}
+.work-fig img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.work-fig .ph {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-weight: 500; font-size: 13px;
+  letter-spacing: var(--tracking-eyebrow); text-transform: uppercase; opacity: 0.35;
+}
+.work-cap { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-top: 14px; }
+.work-cap .ch { font-size: 20px; font-weight: 600; }
+.work-cap .fmt { font-family: var(--font-mono); font-weight: 500; font-size: 15px; opacity: 0.45; }
+.slide.ink .work-fig { background: rgba(240,240,240,0.09); }
+
+/* ---- t-gantt · Terminplan -------------------------------------
+   Wochen ab Auftragserteilung statt Kalenderdaten - sonst verfällt
+   die Offerte, sobald der Entscheid zwei Wochen später fällt.
+   Balken über --von und --bis auf dem Wochenraster.
+   Verbot: höchstens fünf Bahnen, nichts unter einer Woche. */
+.gantt {
+  --wochen: 12;
+  --gantt-lab: 320px;   /* Breite der Bahnenspalte */
+  --gantt-gap: 32px;
+  display: flex; flex-direction: column; flex: 1; min-height: 0; margin-top: 28px;
+}
+.gantt-head, .gantt-row { display: grid; grid-template-columns: var(--gantt-lab) 1fr; gap: var(--gantt-gap); align-items: center; }
+.gantt-scale { display: grid; grid-template-columns: repeat(var(--wochen), 1fr); }
+.gantt-scale span {
+  font-family: var(--font-mono); font-weight: 500; font-size: 14px;
+  letter-spacing: var(--tracking-meta); opacity: 0.45; text-align: center;
+  padding-bottom: 14px;
+}
+/* Der Abstand oben ist kein Weissraum, sondern der Platz für die
+   Beschriftung der Freigabepunkte - ohne ihn sitzt sie auf der
+   Wochenzeile. */
+.gantt-body { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; margin-top: 46px; }
+.gantt-row { flex: 1; position: relative; }
+.gantt-row::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: currentColor; opacity: 0.09;
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 900ms var(--ease-out); transition-delay: var(--d, 0ms);
+}
+.active .gantt-row::before { transform: scaleX(1); }
+.gantt-row .bahn { font-size: 21px; font-weight: 600; }
+.gantt-track { position: relative; display: grid; grid-template-columns: repeat(var(--wochen), 1fr); align-items: center; height: 100%; }
+
+.gantt-bar {
+  grid-column: var(--von) / var(--bis);
+  height: 30px; border-radius: 4px; background: currentColor;
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 900ms var(--ease-out);
+  transition-delay: var(--bd, 0ms);
+}
+.active .gantt-bar { transform: scaleX(1); }
+/* Halbe Deckkraft heisst: hier wartet die Agentur auf den Kunden.
+   Keine zweite Farbe - Tiefe entsteht über Alpha. */
+.gantt-bar.is-wait { opacity: 0.3; }
+
+/* Freigabepunkte laufen als Haarlinie durch alle Bahnen.
+   Wichtig: die Ebene beginnt erst NACH der Bahnenspalte, sonst
+   rechnen die Prozentwerte über die Beschriftung mit und jede
+   Linie steht zwei Wochen zu früh. */
+.gantt-marks {
+  position: absolute; top: 0; bottom: 0; right: 0;
+  left: calc(var(--gantt-lab) + var(--gantt-gap));
+  pointer-events: none;
+}
+.gantt-mark { position: absolute; top: 0; bottom: 0; width: 1px; background: currentColor; opacity: 0.55; }
+.gantt-mark::before {
+  content: ""; position: absolute; top: -7px; left: -6px;
+  width: 13px; height: 13px; background: currentColor; transform: rotate(45deg);
+}
+.gantt-mark span {
+  position: absolute; top: -36px; left: 50%; transform: translateX(-50%);
+  font-family: var(--font-mono); font-weight: 500; font-size: 14px;
+  letter-spacing: var(--tracking-meta); white-space: nowrap;
+}
+.gantt-note { font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-small); opacity: 0.5; margin-top: 26px; }
+
+/* ---- t-persona · Persona-Steckbrief ---------------------------
+   Eine Person pro Folie. Vier Felder, nicht mehr. Und immer die
+   Schlusszeile: was das für uns heisst - ohne sie ist es ein
+   Steckbrief ohne Auftrag.
+   Verbot: nie zwei Personas auf einer Folie, keine Prozentbalken. */
+.persona { display: grid; grid-template-columns: 480px 1fr; gap: 80px; flex: 1; align-items: start; }
+.persona-fig {
+  position: relative; width: 100%; aspect-ratio: 4 / 5;
+  overflow: hidden; border: var(--border-ink); border-radius: var(--radius-sm);
+  background: rgba(10,10,10,0.06);
+}
+.persona-fig img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.persona-name { font-size: 46px; font-weight: 700; letter-spacing: var(--tracking-tight); margin-top: 26px; }
+.persona-meta { font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-small); opacity: 0.55; margin-top: 8px; }
+
+.persona-quote { font-size: 42px; font-weight: 700; line-height: 1.15; letter-spacing: var(--tracking-snug); }
+.persona-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 34px 56px; margin-top: 44px; }
+.persona-field { position: relative; padding-top: 20px; }
+.persona-field::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: currentColor; opacity: 0.16;
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 900ms var(--ease-out); transition-delay: var(--d, 0ms);
+}
+.active .persona-field::before { transform: scaleX(1); }
+.persona-field .lab {
+  font-family: var(--font-mono); font-weight: 500; font-size: 13px;
+  letter-spacing: var(--tracking-eyebrow); text-transform: uppercase;
+  opacity: 0.55; display: block; margin-bottom: 12px;
+}
+.persona-field ul { list-style: none; margin: 0; padding: 0; }
+.persona-field li { font-size: 19px; line-height: 1.35; padding: 3px 0; }
+.persona-so { margin-top: 40px; padding-top: 24px; border-top: var(--border-rule); font-size: 24px; }
+.persona-so b { font-weight: 600; }
+/* Der Zähler läuft in der Überzeile mit, nicht oben rechts - dort
+   sitzt das Lockup, und zwei Dinge auf derselben Höhe am selben
+   Rand sehen aus wie ein Satzfehler. */
+.persona-count { opacity: 0.5; margin-left: 18px; }
+.persona-count::before { content: "·"; margin-right: 18px; }
+
+/* =========================================================
+   DIAGRAMME
+   Zwei Regeln, die alles andere erklären: Zahlen im Deck sind
+   Argumente, keine Tabellen - deshalb wenige Werte, gross gesetzt.
+   Und Farbe trägt hier keine Bedeutung: hervorgehoben wird über
+   Deckkraft, nicht über einen zweiten Ton. Der Zweiton bleibt.
+   ========================================================= */
+
+.chart { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.chart-plot { position: relative; flex: 1; min-height: 0; margin-top: 24px; }
+
+/* Hilfslinien ziehen sich auf, von unten nach oben. */
+.chart-grid { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; }
+.chart-grid span {
+  display: block; height: 2px; background: currentColor; opacity: 0.09;
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 900ms var(--ease-out);
+}
+.active .chart-grid span { transform: scaleX(1); }
+.chart-grid span:nth-child(1) { transition-delay: 240ms; }
+.chart-grid span:nth-child(2) { transition-delay: 200ms; }
+.chart-grid span:nth-child(3) { transition-delay: 160ms; }
+.chart-grid span:nth-child(4) { transition-delay: 120ms; }
+.chart-grid span:nth-child(5) { transition-delay: 80ms; }
+
+.chart-src {
+  font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-small);
+  opacity: 0.5; margin-top: 28px;
+}
+.chart-legend { display: flex; gap: 44px; margin-top: 26px; align-items: center; }
+.chart-legend span { display: flex; align-items: center; gap: 12px; font-size: var(--fs-small); opacity: 0.75; }
+.chart-legend i { width: 26px; height: 3px; background: currentColor; border-radius: 2px; font-style: normal; }
+.chart-legend .is-weak i { opacity: 0.32; }
+
+/* ---- t-bars · Balkendiagramm ----------------------------------
+   Die Balken wachsen aus der Grundlinie. scaleY statt height, damit
+   nichts im Layout rechnet - und der Wert darüber skaliert nicht mit,
+   sonst würde die Zahl verzerrt.
+   Höhe pro Balken über --v, hervorgehobene Säule mit .is-peak. */
+.bars { position: absolute; inset: 0; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 48px; align-items: end; }
+.bar-col { display: flex; flex-direction: column; justify-content: flex-end; height: 100%; }
+.bar-val {
+  font-family: var(--font-mono); font-weight: 500; font-size: 28px;
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+  text-align: center; margin-bottom: 16px;
+  opacity: 0; transform: translateY(12px);
+  transition: opacity 500ms var(--ease-out), transform 500ms var(--ease-out);
+  transition-delay: calc(var(--bd, 0ms) + 700ms);
+}
+.active .bar-val { opacity: 1; transform: translateY(0); }
+.bar {
+  height: var(--v, 50%); background: currentColor; border-radius: 3px 3px 0 0;
+  opacity: 0.3;
+  transform: scaleY(0); transform-origin: bottom;
+  transition: transform 1100ms var(--ease-out), opacity 600ms var(--ease-out);
+  transition-delay: var(--bd, 0ms);
+}
+.active .bar { transform: scaleY(1); }
+.bar-col.is-peak .bar { opacity: 1; }
+.bar-col:nth-child(1) { --bd: 0ms; }
+.bar-col:nth-child(2) { --bd: 110ms; }
+.bar-col:nth-child(3) { --bd: 220ms; }
+.bar-col:nth-child(4) { --bd: 330ms; }
+.bar-col:nth-child(5) { --bd: 440ms; }
+.bar-col:nth-child(6) { --bd: 550ms; }
+.bar-labs { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 48px; margin-top: 20px; }
+.bar-labs span { text-align: center; font-size: var(--fs-small); opacity: 0.65; }
+.bar-labs span.is-peak { opacity: 1; font-weight: 600; }
+
+/* ---- t-line · Liniendiagramm ----------------------------------
+   Die Linie zeichnet sich selbst. pathLength="1" macht das ohne
+   JavaScript: dasharray und dashoffset stehen beide auf 1, der
+   Offset läuft auf 0 - unabhängig davon, wie lang der Pfad wirklich
+   ist. Danach kommt die Fläche, zuletzt die Punkte. */
+.line-chart { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.line-path {
+  fill: none; stroke: currentColor; stroke-width: 3;
+  stroke-linecap: round; stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1; stroke-dashoffset: 1;
+  transition: stroke-dashoffset 1800ms var(--ease-out) 300ms;
+}
+.active .line-path { stroke-dashoffset: 0; }
+.line-path.is-weak { opacity: 0.28; stroke-dasharray: 0.012 0.012; stroke-dashoffset: 0; transition: opacity 900ms var(--ease-out) 1200ms; opacity: 0; }
+.active .line-path.is-weak { opacity: 0.28; }
+.line-area { fill: currentColor; opacity: 0; transition: opacity 900ms var(--ease-out) 1500ms; }
+.active .line-area { opacity: 0.07; }
+
+.line-dots { position: absolute; inset: 0; pointer-events: none; }
+.line-dot {
+  position: absolute; width: 15px; height: 15px; margin: -7.5px 0 0 -7.5px;
+  border-radius: 50%; background: var(--paper); border: 3px solid var(--ink);
+  transform: scale(0);
+  transition: transform 480ms var(--ease-out);
+  transition-delay: calc(1500ms + var(--dd, 0ms));
+}
+.active .line-dot { transform: scale(1); }
+.slide.ink .line-dot { background: var(--ink); border-color: var(--paper); }
+.line-dot span {
+  position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%);
+  font-family: var(--font-mono); font-weight: 500; font-size: 22px;
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+  white-space: nowrap;
+}
+.line-labs { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; margin-top: 20px; }
+.line-labs span { text-align: center; font-size: var(--fs-small); opacity: 0.65; }
+
+/* ---- t-services · Leistungsübersicht --------------------------
+   Drei Disziplinen nebeneinander, jede mit ihren Unterdisziplinen.
+   Die Linie oben zieht sich auf wie bei den Prinzipien - das ist
+   dieselbe Familie, nur mit Liste statt Fliesstext. */
+.services { display: grid; grid-template-columns: repeat(3, 1fr); gap: 72px; flex: 1; align-content: center; }
+.service { position: relative; padding-top: 30px; }
+.service::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: currentColor;
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 1000ms var(--ease-out); transition-delay: var(--d, 0ms);
+}
+.active .service::before { transform: scaleX(1); }
+.service .num { display: block; margin-bottom: 20px; }
+.service h3 { font-size: var(--fs-h3); margin-bottom: 26px; }
+.service ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.service li {
+  font-size: 20px; line-height: 1.3; padding: 13px 0;
+  border-top: 1px solid; border-color: rgba(10,10,10,0.12);
+}
+.service li:first-child { border-top: 0; padding-top: 0; }
+.slide.ink .service li { border-color: rgba(240,240,240,0.16); }
+.service .more { margin-top: 22px; font-size: var(--fs-small); opacity: 0.55; }
+
+/* =========================================================
+   KAMPAGNONS-EIGENE TYPEN
+   Die drei, die nur wir haben - und die deshalb den Unterschied
+   zwischen unserem Deck und einer Vorlage aus dem Netz machen.
+   ========================================================= */
+
+/* ---- t-embed · die Einbettung ---------------------------------
+   Die Animation von kampagnons.ch, auf Bühnenmass gebracht.
+
+   Es sind DREI Formen, nicht zwei: die drei Blätter des Signets.
+   Jede trägt dieselbe viewBox (626 x 628) und wird per clipPath auf
+   ihr Blatt beschnitten - deshalb müssen alle drei exakt gleich
+   gross sein und exakt übereinander liegen. Sie fahren versetzt
+   herein (lime von links, pink von rechts, violett von links) und
+   ergeben am Ende das vollständige Signet. Danach atmet es.
+
+   Wer die Grössen einzeln anfasst, zerlegt das Logo.
+
+   Zeiten eins zu eins von der Live-Seite: 2.4s Kurve, Versatz
+   0 / 0.8 / 1.6s, Atmen ab 4.2s. */
+.embed-scene {
+  --embed-size: 660px;
+  --embed-off: 1320px;      /* weit genug, damit die Form ganz draussen steht */
+  position: relative; flex: 1; isolation: isolate;
+  display: flex; align-items: center; justify-content: center;
+}
+.embed-shape {
+  position: absolute; width: var(--embed-size); height: var(--embed-size);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; will-change: transform;
+}
+.embed-shape svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+.embed-shape-lime {
+  z-index: 3; transform: translateX(calc(var(--embed-off) * -1));
+  transition: transform 2.4s cubic-bezier(.16,.87,.35,1), opacity .9s;
+  /* Der Multiply lässt die Überlappungen dunkler stehen - ohne ihn
+     deckt das Lime-Blatt die beiden anderen einfach zu. */
+  mix-blend-mode: multiply;
+}
+.embed-shape-pink {
+  z-index: 1; transform: translateX(var(--embed-off));
+  transition: transform 2.4s cubic-bezier(.16,.87,.35,1) .8s, opacity .9s .8s;
+}
+.embed-shape-violet {
+  z-index: 2; transform: translateX(calc(var(--embed-off) * -1));
+  transition: transform 2.4s cubic-bezier(.16,.87,.35,1) 1.6s, opacity .9s 1.6s;
+}
+.active .embed-shape { transform: translateX(0); opacity: 1; }
+
+@keyframes embed-breathe {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.035); }
+}
+.active .embed-blob {
+  transform-origin: 50% 50%;
+  animation: embed-breathe 6s ease-in-out 4.2s infinite;
+}
+
+/* Beschriftung. Ohne sie sind es drei hübsche Flecken - man sieht die
+   Form, versteht aber nicht, dass darin der Satz steckt: Kampagnons,
+   verstärkt mit KI, eingebettet in deinem KMU. Sie erscheinen erst,
+   wenn alle drei Blätter liegen. */
+.embed-labels { position: absolute; inset: 0; z-index: 20; pointer-events: none; }
+.embed-label {
+  position: absolute; white-space: nowrap;
+  font-weight: 900; text-transform: uppercase;
+  letter-spacing: 0.14em; font-size: 26px;
+  opacity: 0; transform: translateY(14px);
+}
+.active .embed-label {
+  opacity: 1; transform: translateY(0);
+  transition: opacity 800ms var(--ease-out) 3.2s, transform 800ms var(--ease-out) 3.2s;
+}
+.embed-label::before {
+  content: ""; position: absolute; top: 50%; height: 2px;
+  background: currentColor; opacity: 0.28;
+}
+
+/* Die Positionen hängen an der MITTE der Szene, nicht an ihren Rändern -
+   dort liegt das Signet. Vom Rand aus gerechnet wandern die Wörter mit
+   jeder Änderung der Folienhöhe von ihrem Blatt weg.
+
+   Die Werte sind am fertig zusammengesetzten Signet ausgemessen, nicht
+   geschätzt. Sichtbar - also nicht von einem anderen Blatt verdeckt -
+   ist jeweils nur ein Ausschnitt, und der Strich muss dort landen:
+     Pink    oben,        sichtbar bei y −257…−125, rechts bis x +168
+     Violett links,       sichtbar bei y −161…+163, links bis x −252
+     Lime    unten rechts, sichtbar bei y +43…+223, rechts bis x +250
+   Wer die Grösse der Szene ändert, misst neu. */
+/* Nachgemessen mit elementFromPoint auf den gemalten Pfaden, nicht
+   an der Bounding-Box: Pink ist rechts nur bis x +108 sichtbar, wenn
+   man auf Höhe −205 ansetzt - der Strich endete also 55 px daneben.
+   Weiter unten wird Pink breiter: auf −95 reicht es bis +177. */
+/* Am 18.08.2026 höher gesetzt. Der Strich muss dabei auf Pink
+   bleiben - nachgemessen mit `isPointInFill` auf dem gemalten Pfad,
+   nicht an der Bounding-Box: Pink reicht rechts bis x +186 auf Höhe
+   −95, bis +160 auf −145, bis +144 auf −170. Der Strich sitzt bei
+   `top + 13px`, seine Linie liegt also bei −150.
+   Wer weiter hochzieht, misst neu und rückt dabei nach LINKS. */
+.embed-label.is-ki   { top: calc(50% - 163px); left: calc(50% + 222px); }
+.embed-label.is-ki::before   { right: 100%; width: 56px; margin-right: 14px; }
+
+.embed-label.is-kamp { top: calc(50% - 12px); right: calc(50% + 300px); }
+.embed-label.is-kamp::before { left: 100%; width: 56px; margin-left: 14px; }
+
+.embed-label.is-kmu  { top: calc(50% + 140px); left: calc(50% + 300px); }
+.embed-label.is-kmu::before  { right: 100%; width: 56px; margin-right: 14px; }
+
+/* ---- t-person · Portrait mit Okklusion ------------------------
+   Der Name liegt hinter der Person, der Freisteller darüber - so
+   verschwindet die Typo halb hinter der Schulter. Das ist der
+   Effekt, der es zu unserem Portrait macht und nicht zu einem
+   Mitarbeiterfoto.
+
+   Der Name steht in Lime - so wie auf kampagnons.ch. Das ist die
+   einzige Stelle im ganzen System, an der Lime als Fläche auftritt,
+   und sie ist von Simon am 16.08.2026 ausdrücklich so entschieden.
+   Sie taugt nicht als Präzedenzfall: überall sonst bleibt Lime
+   Marker. Wer den Namen in Ink will, setzt .name-ink. */
+/* Die Figurenhöhe hängt an der Bühne, nicht an der Spaltenbreite -
+   sonst wächst das Portrait mit jeder Spalte, die man wegnimmt, und
+   schiebt den Text unten aus der Folie. --person-h ist der Regler. */
+.persons {
+  --person-h: 600px;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 540px)); gap: 80px;
+  flex: 1; align-content: center; justify-content: center;
+}
+.persons.solo { grid-template-columns: minmax(0, 620px); --person-h: 680px; }
+.persons.trio { grid-template-columns: repeat(3, minmax(0, 420px)); gap: 56px; --person-h: 470px; }
+.person { position: relative; }
+.person-figure {
+  position: relative; height: var(--person-h); aspect-ratio: 4 / 5; width: auto;
+  overflow: hidden; border-radius: var(--radius-sm);
+  background: rgba(10,10,10,0.06);
+}
+.person-figure img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.person-figure .p-base { z-index: 1; }
+.person-figure .p-name {
+  position: absolute; z-index: 2; left: 0; right: 0; top: 26%;
+  text-align: center; text-transform: uppercase;
+  font-weight: 900; font-size: calc(var(--person-h) * 0.23); line-height: 0.86;
+  letter-spacing: var(--tracking-tight);
+  color: var(--lime);
+  transform: translateY(16%);
+  transition: transform 1.4s var(--ease-out);
+  transition-delay: var(--d, 0ms);
+  pointer-events: none;
+}
+.active .person-figure .p-name { transform: translateY(-14%); }
+.person-figure .p-name.name-ink { color: var(--ink); }
+.person-figure .p-top { z-index: 3; }
+/* Der Bildausschnitt entscheidet, ob die Okklusion wirkt: sitzt der
+   Kopf zu tief, steht der Name frei daneben statt halb dahinter.
+   Pro Portrait nachziehen - das ist Handarbeit, kein Automatismus. */
+.person-figure[data-focus="high"] img { object-position: 50% 8%; }
+.person-figure[data-focus="low"]  img { object-position: 50% 85%; }
+.person p { max-width: 100%; }
+/* Grössen bewusst über dem Systemminimum: diese Folie wird im Raum
+   gelesen, nicht überflogen. 15px Label und 18px Fliesstext waren
+   auf dem Beamer zu klein. */
+.person .p-role {
+  font-family: var(--font-mono); font-weight: 500; font-size: 15px;
+  letter-spacing: var(--tracking-eyebrow); text-transform: uppercase;
+  opacity: 0.6; margin-top: 26px; display: block;
+}
+.person h3 { font-size: var(--fs-h3); margin-top: 10px; }
+.person p { font-size: 21px; line-height: 1.45; margin-top: 16px; opacity: 0.9; max-width: 620px; }
+
+/* ---- t-track · Werdegang --------------------------------------
+   Zwei Bahnen nebeneinander, eine pro Person. Jede Station eine
+   Zeile: Zeitraum, Rolle, was daran zählt. Für den Nachweis, dass
+   Erfahrung nicht behauptet, sondern gelaufen ist. */
+.tracks { display: grid; grid-template-columns: repeat(2, 1fr); gap: 88px; flex: 1; align-content: center; }
+.track-head { display: flex; align-items: baseline; gap: 20px; padding-bottom: 22px; border-bottom: 2px solid currentColor; }
+.track-head h3 { font-size: var(--fs-h3); }
+.track-head .years {
+  font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-small);
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+  opacity: 0.55; margin-left: auto;
+}
+.track-list { display: flex; flex-direction: column; }
+.track-step { display: grid; grid-template-columns: 130px 1fr; gap: 28px; padding: 22px 0; position: relative; }
+.track-step::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: currentColor; opacity: 0.11;
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 900ms var(--ease-out); transition-delay: var(--d, 0ms);
+}
+.active .track-step::before { transform: scaleX(1); }
+.track-step .when {
+  font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-small);
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+  opacity: 0.5;
+}
+/* Die Stationstitel sind in BEIDEN Bahnen gleich gross. Vorher bekam
+   `.is-peak` 28px statt 24px - und weil die Spitzenstation bei Daniel
+   und Simon auf verschiedenen Zeilen liegt, standen links und rechts
+   ungleich grosse Titel nebeneinander. Das liest sich als Rangordnung,
+   und die gibt es hier nicht. Hervorgehoben wird über die Linie, nicht
+   über die Schriftgrösse. */
+.track-step h4 { font-size: 24px; }
+.track-step p { font-size: 19px; line-height: 1.4; opacity: 0.8; margin-top: 6px; }
+
+/* =========================================================
+   Barrierefreiheit und Export
+   ========================================================= */
+
+/* Wer Bewegung abgestellt hat, bekommt keine. Die Folie erscheint
+   trotzdem - nur sofort. */
+@media (prefers-reduced-motion: reduce) {
+  .slide, [data-r], .t-full .bg, .hud .bar {
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
+  }
+  .t-full .bg { transform: none; }
+}
+
+/* PDF-Export über ?print. Jede Folie wird eine Seite, alle Reveals
+   sind offen, das Chrome verschwindet. */
+@page { size: 1920px 1080px; margin: 0; }
+
+@media print {
+  /* Ohne das druckt Chrome KEINE Hintergrundflächen - "Hintergrundgrafiken"
+     ist im Druckdialog standardmässig aus. Dann verschwinden alle dunklen
+     Folien, jedes Vollbild und jede Aurora, und übrig bleibt Text auf
+     Weiss. Das ist der teuerste Ein-Zeilen-Fehler im ganzen System. */
+  html, body {
+    overflow: visible; height: auto; background: #fff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Alle Regeln hier hängen an .viewport. Die Karten in slides/ bauen
+     dieselbe Bühne in einer verkleinerten Hülle nach - ein ungebundenes
+     .stage { transform: none } würde ihre Skalierung killen und die
+     Folie aus der Karte schieben. */
+  .viewport { position: static; display: block; }
+  .viewport .stage {
+    position: static; width: var(--stage-w); height: auto;
+    transform: none !important;
+    zoom: 1 !important;   /* der Export rechnet in Bühnengrösse, nicht in Fenstergrösse */
+  }
+  .viewport .slide {
+    position: relative; inset: auto;
+    opacity: 1 !important; visibility: visible !important; transform: none !important;
+    height: var(--stage-h);
+    page-break-after: always; break-inside: avoid;
+  }
+  [data-r] { opacity: 1 !important; transform: none !important; }
+  .hud, .counter, .hint, .fsbtn { display: none; }
+  .t-full .bg { transform: none; }
+  .t-full .content { position: absolute; }
+}
+
+/* ---- t-case.flip · Bild links statt rechts --------------------
+   Nur für Referenzstrecken mit mehreren Cases. Wechselnde Seiten
+   geben der Strecke einen Takt; ohne sie liest sich die dritte
+   Folie wie die erste mit anderem Text.
+   Verbot: nie zweimal dieselbe Seite hintereinander, und nie bei
+   einem einzelnen Case - dann ist es keine Abwechslung, sondern
+   eine Ausnahme ohne Grund. */
+.t-case.flip .case { grid-template-columns: 620px 1fr; }
+.t-case.flip .case-fig { order: -1; }
+
+/* ---- t-case.shot · Bildschirmfoto statt Porträt ---------------
+   `case-fig` ist 4:5 hoch, weil dort normalerweise ein Mensch oder
+   ein Objekt steht. Eine Website ist quer: im Hochformat schneidet
+   `object-fit: cover` mitten durch die Headline, und der Beweis
+   beweist nichts mehr.
+   `shot` dreht den Rahmen auf 16:10, gibt der Spalte die nötige
+   Breite und zentriert sie neben dem Text.
+   Verbot: nicht für Porträts - ein Gesicht im Querformat sieht aus
+   wie ein Passbild, das jemand falsch beschnitten hat. */
+.t-case.shot .case { grid-template-columns: 1fr 780px; }
+.t-case.shot.flip .case { grid-template-columns: 780px 1fr; }
+.t-case.shot .case-fig { aspect-ratio: 16 / 10; align-self: center; }
+
+/* ---- Die Spur -------------------------------------------------
+   Eine Linie, die dort weiterläuft, wo der Lime-Marker aufhört:
+   in ein paar ruhigen Kurven zum Folienrand und über ihn hinaus.
+   Und viel später, auf der Schlussfolie, kommt sie von oben wieder
+   herein, zieht in einem Bogen um den Text und geht unten links
+   hinaus. Dort unterstreicht sie nichts mehr und die Folie trägt als
+   einzige im Deck keinen Lime-Marker - zwei grüne Dinge auf einem
+   Blatt wären eines zu viel. Die Bühne hat
+   `overflow: hidden`, deshalb braucht es keine Maske - die Linie
+   darf im SVG über 1920 hinauslaufen und wird sauber abgeschnitten.
+
+   Sie liegt HINTER dem Inhalt (`z-index: -1`). Eine Spur läuft
+   unter den Dingen durch, nicht über sie. Und Text, den eine Linie
+   kreuzt, liest sich schlechter, ohne dass die Linie dadurch
+   besser aussieht.
+
+   Die Engine setzt `--spur-len` (die Pfadlänge) und auf der
+   Schlussfolie `--spur-ms` (die Dauer, aus der Länge gerechnet,
+   damit die Spitze auf beiden Folien gleich schnell läuft). Der Pfad
+   wird gerechnet, nicht getippt: er hängt an der gemessenen
+   Markierung und am gemessenen Zeilenende und verrutscht deshalb
+   nicht, wenn die Überschrift umgeschrieben wird.
+
+   VERBOT: genau zwei Spuren pro Deck - eine, die geht
+   (`data-spur="start"`), und eine, die durchgeht (`data-spur="ende"`).
+   Nie eine dritte, nie zwei auf derselben Folie, und nie eine auf
+   zwei aufeinanderfolgenden Folien. Genau das war der erste Versuch
+   am 05.09.2026: Die Linie sollte eine Folie verlassen und auf der
+   nächsten wieder hereinkommen. Das klang gut und war es nicht -
+   auf der zweiten Folie stand die Linie schon, bevor sich auf der
+   ersten der Marker fertig gezeichnet hatte. Ein Effekt, der über
+   einen Folienwechsel hinweg stimmen soll, ist auf einen Zufall
+   angewiesen. Über 27 Folien hinweg ist er kein Zufall mehr,
+   sondern eine Erinnerung: Niemand vergleicht, jeder erkennt.
+
+   Die zwei sind eine Klammer, kein Ornament. Wer eine dritte setzt,
+   macht aus dem Wiedererkennen ein Muster - und ein Muster hat
+   keinen Schluss.
+   Gebaut am 05.09.2026 für Naturspur, weil ihr Name das hergibt.
+   Bei einem Kunden ohne Spur im Namen: weglassen. */
+.spur {
+  position: absolute; inset: 0; z-index: -1;
+  width: 100%; height: 100%;
+  overflow: visible; pointer-events: none;
+}
+.spur path {
+  fill: none;
+  stroke: var(--lime);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: var(--spur-len, 4000);
+  stroke-dashoffset: var(--spur-len, 4000);
+}
+/* Auf dem markierten Wort gibt der CSS-Marker ab - die Spur zeichnet
+   die Unterstreichung selbst. Die Klasse setzt die Engine erst, wenn
+   der Pfad steht; ohne JavaScript bleibt der Marker. */
+.hl.hl-spur { background-image: none; }
+
+
+.slide.active .spur path {
+  stroke-dashoffset: 0;
+  /* Eine eigene Kurve statt --ease-out: Die Linie wird gezogen, nicht
+     eingeblendet. --ease-out startet zu schnell, dann ist die
+     Unterstreichung ein Blitz und der Rest ein Ausrollen. Diese hier
+     nimmt ruhig Fahrt auf und läuft lange aus. */
+  transition: stroke-dashoffset var(--spur-ms, 2000ms) cubic-bezier(0.45, 0.05, 0.25, 1);
+  transition-delay: 900ms;
+}
+
+/* Rückwärts blättern: die Spur war schon da, sie zeichnet sich
+   nicht neu. Ohne das läuft sie auf dem Rückweg verkehrt herum an
+   und die Folie wartet auf einen Effekt, den niemand sehen will. */
+.stage.back .slide.active .spur path {
+  transition-duration: 260ms; transition-delay: 0ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spur path { stroke-dasharray: none !important; stroke-dashoffset: 0 !important; transition: none !important; }
+}
+
+/* ---- t-embed.has-satz · die Einbettung, erklärt ----------------
+   Die Grundfassung von `t-embed` trägt keinen Text: Im Raum spricht
+   den Satz der Vortragende, und die drei Beschriftungen reichen.
+
+   Sobald ein Deck GELESEN statt vorgetragen wird, kippt das. Die
+   Folie ist ein Venn-Diagramm; ohne Erklärung sieht ein Leser drei
+   hübsche Flecken und blättert weiter. Von allen Folientypen ist
+   dieser der einzige, der ohne Stimme gar nichts sagt.
+
+   `has-satz` nimmt der Szene die feste Höhe weg und setzt einen
+   Absatz darunter. Die Szene rückt dadurch nach oben, weil die
+   Folie ihren Inhalt als Ganzes zentriert.
+
+   ⚠️ `--embed-size` bleibt unangetastet. Die drei Beschriftungen
+   sind in Pixeln zur MITTE der Szene ausgemessen; die Mitte bleibt
+   die Mitte, egal wie hoch der Kasten ist - die Grösse der Formen
+   darf sich aber nicht ändern, sonst wandern die Striche von ihrem
+   Blatt weg. Siehe die Messwerte weiter oben.
+
+   VERBOT: höchstens vier Sätze. Wer mehr braucht, braucht eine
+   zweite Folie - diese hier lebt vom Bild. */
+.t-embed.has-satz .embed-scene { flex: 0 0 620px; margin-bottom: 44px; }
+.t-embed.has-satz .embed-satz {
+  max-width: 1240px; margin: 0 auto; text-align: center;
+  font-size: var(--fs-lead); line-height: 1.4; color: var(--ink-80);
+}
+.t-embed.has-satz.ink .embed-satz { color: var(--paper-92); }
+
+/* Der Satz kommt NACH den Beschriftungen, nicht vor ihnen - er
+   erklärt sie. Über `data-r="6"` käme er nach 920 ms und damit
+   zweieinhalb Sekunden zu früh; die Beschriftungen stehen erst bei
+   3.2 s. Deshalb hier eine eigene Verzögerung statt einer weiteren
+   Reveal-Stufe: Die Stufen sind ein Raster, und ein Raster verbiegt
+   man nicht für einen Sonderfall. */
+.t-embed.has-satz.active .embed-satz { transition-delay: 3.9s; }
+
+@media (prefers-reduced-motion: reduce) {
+  /* Beschriftungen und Satz stehen sofort. Ein Text, der nach vier
+     Sekunden erscheint, ist für empfindliche Augen keine Animation
+     mehr, sondern eine Wartezeit - und die Folie sagt dasselbe,
+     nur ohne den Weg dahin. */
+  .embed-label, .active .embed-label,
+  .t-embed.has-satz .embed-satz, .t-embed.has-satz.active .embed-satz {
+    opacity: 1 !important; transform: none !important; transition: none !important;
+  }
+}
+
+/* ---- aiflow-gate mit zweizeiliger Beschriftung -----------------
+   Die Grundfassung ist einzeilig und `nowrap` - das trägt zwei bis
+   drei Wörter. Sobald die Raute erklärt werden muss statt nur
+   benannt, reicht das nicht: ein langer Text schiesst mit `nowrap`
+   quer über die Folie, weil die Beschriftung absolut sitzt und
+   keine Breite hat, an der sie umbrechen könnte.
+
+   `has-sub` gibt ihr eine feste Breite, zentriert sie unter der
+   Raute und setzt die zweite Zeile als leisere Unterzeile ab.
+
+   Warum zwei Zeilen und nicht ein Satz mit Gedankenstrich: Die
+   erste Zeile sagt, WAS an der Raute passiert, die zweite, WARUM
+   das zusammen besser ist. Zwei Aussagen in einer Zeile mit einem
+   Strich dazwischen liest niemand als zwei. */
+.aiflow-gate.has-sub span {
+  white-space: normal; text-align: center;
+  width: 460px; left: 50%; transform: translateX(-50%);
+  line-height: 1.4;
+}
+.aiflow-gate.has-sub span em {
+  display: block; font-style: normal; opacity: 0.55; margin-top: 3px;
+}
+
+/* Die Beschriftung hängt UNTER der Raute und zählt fürs Layout nicht
+   mit, weil sie absolut sitzt. Einzeilig fällt das nicht auf,
+   zweizeilig landet sie unter der Satzkante und im Zweifel auf dem
+   Folienzähler. `gate-sub` holt sich die Reserve vom Block über der
+   Spur - das geht nur, weil das Raster darüber `flex: 1` hat und den
+   Platz wieder hergibt. */
+.aiflow.gate-sub { margin-bottom: 58px; }
+
+/* ---- t-ref · Referenz, einfach --------------------------------
+   Die schlanke Schwester von `t-case`. `t-case` erzählt einen Weg
+   in drei Schritten und endet auf einer Zahl - das braucht einen
+   Fall, bei dem es etwas zu messen gibt. Die meisten Arbeiten haben
+   das nicht, und dann steht dort eine erfundene Zahl oder eine
+   leere Zeile.
+
+   `t-ref` behauptet weniger: Jahr, Disziplinen, ein Absatz, das
+   Zeichen der Kundin. Mehr braucht eine Referenzstrecke nicht, und
+   weniger Bausteine heisst, dass zehn davon nebeneinander noch
+   ruhig aussehen.
+
+   Links steht die Sache, rechts das Zeichen. Nicht umgekehrt: Ein
+   Logo ist der Beleg, nicht das Argument.
+   Verbot: kein Case ohne Kundennamen. Und keine Disziplin, für die
+   es keine Rechnung gab. */
+.ref { display: grid; grid-template-columns: 1fr 700px; gap: 96px; flex: 1; align-items: center; }
+.ref-body { display: flex; flex-direction: column; }
+
+/* Das Jahr trägt die Folie, nicht die Überschrift. In einer Strecke
+   ist die Jahreszahl das, woran der Leser sich orientiert - sie
+   sagt in einem Blick, ob das frisch ist oder Geschichte. */
+.ref-year {
+  font-family: var(--font-mono); font-weight: 500; font-size: 96px;
+  line-height: 0.9; letter-spacing: -0.03em; opacity: 0.32;
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+  margin-bottom: 14px;
+}
+.ref-body h1 { font-size: 68px; line-height: 1.05; letter-spacing: var(--tracking-tight); }
+
+/* Disziplinen als Chips. Sie sind keine Knöpfe und tun so, als
+   wären sie welche - deshalb kein Hover, kein Schatten, keine
+   Farbe. Ein Chip zu viel entwertet die anderen: nur nennen, was
+   wirklich gemacht wurde. */
+.ref-tags { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.ref-tags span {
+  font-family: var(--font-mono); font-weight: 500; font-size: 15px;
+  letter-spacing: var(--tracking-eyebrow); text-transform: uppercase;
+  padding: 9px 18px 8px; border: 2px solid currentColor; border-radius: 999px;
+  opacity: 0.72;
+}
+.ref-body p { font-size: var(--fs-lead); line-height: 1.4; margin-top: 34px; max-width: 720px; }
+
+/* Der Augenzwinkerer steht kleiner und leiser als der Rest. Er ist
+   eine Randbemerkung, und eine Randbemerkung in Lesegrösse ist
+   keine mehr - dann klingt der Scherz wie ein Vorwurf. */
+.ref-wink { font-size: var(--fs-small) !important; opacity: 0.55; margin-top: 20px !important; }
+
+/* Freie Fläche, kein Passepartout. Ein Logo braucht Luft um sich.
+
+   Am 05.09.2026 stand hier zwischenzeitlich eine weisse Karte, weil
+   Logo-Videos auf weissem Grund geliefert werden und auf dem grauen
+   Papier ein Rechteck stehenblieb. Zwei Versuche daran sind
+   gescheitert: `mix-blend-mode: multiply` greift bei Video nicht
+   (Chrome komponiert es in einer eigenen Ebene), und eine weisse
+   Karte beziehungsweise eine weisse Folienhälfte löste das Problem
+   im Layout statt an der Quelle.
+
+   Gelöst ist es jetzt beim Material: Das Video ist einmal durch
+   ffmpeg gelaufen und mit 240/255 multipliziert, sein Weiss ist
+   exakt `--paper`. Auf der Folie sieht man davon nichts mehr - und
+   das System braucht dafür keine einzige Sonderregel.
+   → assets/logos/maerlitheater-animation.mp4
+
+   Wer ein neues Logo-Video einsetzt, macht dasselbe:
+   ffmpeg -i roh.mp4 -vf "format=rgb24,lutrgb=r='val*240/255':
+   g='val*240/255':b='val*240/255',format=yuv420p" -an fertig.mp4 */
+.ref-fig {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  overflow: hidden; aspect-ratio: 16 / 10;
+}
+/* Näher heran: Das Logo füllt in der Videovorlage nur das mittlere
+   Drittel. Ungezoomt sässe es als Briefmarke in der Karte. Die
+   Animation schreibt sich ausschliesslich in der Mitte auf, seitlich
+   beschneiden ist deshalb gefahrlos - nachgeprüft an den Einzelbildern.
+   Verbot: nicht über 1.4. Darüber schneidet es die Unterlängen von
+   «Zürich» ab. */
+.ref-fig img, .ref-fig video {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  transform: scale(1.3);
+}
+/* Bildschirmfoto statt Logo: kein Zoom, das Bild ist schon gefüllt. */
+.ref-fig.is-shot { background: rgba(10,10,10,0.06); }
+.ref-fig.is-shot img, .ref-fig.is-shot video { transform: none; }
+.slide.ink .ref-fig.is-shot { background: rgba(240,240,240,0.08); }
+
+/* Der Knopf ist ein Flex-Kind der linken Spalte und würde sich über
+   die volle Spaltenbreite strecken - ein Knopf so breit wie ein
+   Absatz sieht aus wie ein Fehler. */
+.ref-body .linkbtn { align-self: flex-start; }
+
+/* Das Jahr steht als Chip zwischen den Disziplinen, nicht als
+   Schauzahl darüber. Als 96-px-Zahl zog es den ganzen Blick auf
+   sich - und das Jahr ist die unwichtigste Information auf einer
+   Referenz. Es gehört zur Einordnung, nicht zur Aussage.
+
+   Und es sieht aus wie die anderen Chips, nicht leiser. Ein
+   abgedunkeltes Jahr war am 05.09.2026 kurz drin und ist wieder
+   raus: Drei Chips nebeneinander, von denen einer anders aussieht,
+   werfen die Frage auf, warum - und die Antwort ist es nicht wert.
+   Verbot: keine Sonderbehandlung für den Jahres-Chip. */
+
+/* Der Sprung auf die Seite der Kundin, in Lime. `.linkbtn` ist von
+   Haus aus schwarz; das ist richtig, wo der Knopf der einzige
+   Farbpunkt wäre. In einer Referenzstrecke muss er dagegen sofort
+   als das eine Klickbare erkennbar sein, und Lime ist die einzige
+   Farbe, die im System etwas bedeutet.
+   Verbot: höchstens einer pro Folie. Zwei Lime-Knöpfe nebeneinander
+   heben sich gegenseitig auf. */
+.linkbtn.is-lime, .slide.ink .linkbtn.is-lime {
+  background: var(--lime); color: var(--ink);
+  /* Bold statt Medium, und nur hier. Dunkle Schrift auf hellem Grund
+     wirkt optisch dünner als helle auf dunklem - derselbe Schnitt
+     sieht auf Lime schwächer aus als auf Schwarz. Der schwarze Knopf
+     bleibt deshalb auf 500. Calibre Bold ist ein geladener Schnitt,
+     keine gerechnete Fettung. */
+  font-weight: 700;
+}
+
+
+
+
+/* ---- Laptop · Rahmen für bewegte Arbeiten ---------------------
+   Ein Video ohne Rahmen ist ein Video. Ein Video in einem Laptop
+   ist eine Arbeit, die jemand ausgeliefert hat - der Rahmen sagt in
+   einem Blick, wo das Ding gelaufen ist.
+
+   Gebaut aus zwei Kästen statt aus einem Bild: Ein PNG-Mockup wäre
+   an eine Auflösung und an ein Modell gebunden, müsste mitgepflegt
+   werden und sähe im PDF-Export weich aus. Zwei Kästen skalieren
+   mit der Bühne und wiegen nichts.
+
+   Bewusst nüchtern: keine Spiegelung, kein Schlagschatten, kein
+   Aluminium-Verlauf. Der Rahmen soll den Inhalt halten, nicht mit
+   ihm konkurrieren - und ein glänzendes Gerät ist im Deck von 2026
+   das, was der Schlagschatten 2010 war.
+   Verbot: keine Marke aufs Gehäuse. Weder Apfel noch sonst was. */
+.laptop { display: flex; flex-direction: column; align-items: center; width: 100%; }
+.laptop-lid {
+  width: 100%; box-sizing: border-box; padding: 14px;
+  background: var(--ink); border-radius: 16px 16px 5px 5px;
+}
+.laptop-view {
+  aspect-ratio: 16 / 9; border-radius: 4px; overflow: hidden; background: #000;
+}
+.laptop-view video, .laptop-view img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+/* Der Fuss steht über den Deckel hinaus, sonst sieht es aus wie ein
+   Bilderrahmen. 112 % ist die Grenze: darüber kippt es ins Comichafte. */
+.laptop-foot {
+  width: 112%; height: 15px; position: relative;
+  background: var(--ink); border-radius: 0 0 13px 13px;
+}
+.laptop-foot::after {
+  content: ""; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 92px; height: 5px; border-radius: 0 0 7px 7px;
+  background: var(--paper); opacity: 0.30;
+}
+.slide.ink .laptop-lid, .slide.ink .laptop-foot { background: var(--paper); }
+.slide.ink .laptop-foot::after { background: var(--ink); opacity: 0.35; }
+
+/* Ein Gerät steht für sich: kein weisses Feld, kein Zuschnitt, kein
+   Zoom. `is-device` nimmt der Bildspalte alles weg, was für ein
+   freigestelltes Logo gedacht war. */
+.ref-fig.is-device {
+  background: none; border-radius: 0; overflow: visible; aspect-ratio: auto;
+  display: block;
+}
+.ref-fig.is-device video, .ref-fig.is-device img { transform: none; }
+
+/* ---- Ton-Knopf ------------------------------------------------
+   Browser lassen kein Video mit Ton von selbst starten, solange
+   niemand die Seite berührt hat. Die Engine versucht es trotzdem:
+   Wer bis zu dieser Folie geblättert hat, HAT die Seite berührt,
+   und dann erlaubt Chrome es meistens. Klappt es nicht, läuft das
+   Video stumm weiter und dieser Knopf holt den Ton nach.
+
+   So oder so muss er da sein - ein Video, das ungefragt losplärrt
+   und sich nicht abstellen lässt, ist der schnellste Weg zum
+   geschlossenen Tab.
+
+   Zurückhaltend gesetzt: Er ist eine Möglichkeit, keine
+   Aufforderung. Volle Deckkraft erst beim Darüberfahren. */
+.tonbtn {
+  align-self: flex-end; margin-top: 18px;
+  font-family: var(--font-mono); font-weight: 500; font-size: 14px;
+  letter-spacing: var(--tracking-eyebrow); text-transform: uppercase;
+  padding: 9px 18px 8px;
+  border: 2px solid currentColor; border-radius: 999px;
+  background: none; color: inherit; cursor: pointer; opacity: 0.55;
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+.tonbtn:hover, .tonbtn:focus-visible { opacity: 1; }
+
+/* ---- .ref-fig.is-logo · Zeichen ohne Kante --------------------
+   Logo-Videos kommen auf Weiss. Auf dem grauen Papier steht dadurch
+   ein hellerer Kasten. Drei Wege wurden am 05.09.2026 probiert und
+   verworfen:
+
+   1. `mix-blend-mode: multiply` - greift bei Video nicht, Chrome
+      komponiert es in einer eigenen Ebene.
+   2. Weisse Karte beziehungsweise weisse Folienhälfte - löst es im
+      Layout statt an der Quelle und macht aus einer Notlösung ein
+      Gestaltungsmerkmal.
+   3. Das Weiss im Video auf exakt `--paper` herunterrechnen - richtig
+      gedacht, aber der Browser hellt Video beim Ausgeben wieder auf,
+      und zwar je nach Farbprofil, Bildschirm und Export anders. Auf
+      einem Rechner getroffen heisst auf dem nächsten daneben.
+
+   Deshalb jetzt: grob korrigieren und die KANTE aufgeben. Ohne Kante
+   gibt es nichts, woran das Auge einen Kasten erkennt - der Rest ist
+   ein Hauch heller und fällt niemandem auf. Das hält auf jedem
+   Bildschirm, weil es nichts zu treffen gibt.
+
+   Die Zahlen sind gerechnet, nicht geschätzt. Der Kasten ist 700 x 437,
+   also 350 x 218 von der Mitte zum Rand. Die Ellipse misst 48 % x 49 %
+   der Kastenmasse (336 x 214) und läuft bei 100 % aus - der Verlauf
+   ist damit VOR der Kante fertig. Bei der ersten Fassung war er es
+   nicht, und genau dort blieb ein Schimmer stehen.
+   Der Kern deckt bis 62 % (208 x 133) und ist damit grösser als das
+   Logo (rund 136 x 115 ab Mitte). Es wird nie angeschnitten.
+
+   Der Zoom ist für diesen Fall kleiner als sonst: Bei 1.3 füllte das
+   Logo den Kern bis an den Rand aus, und der Verlauf hätte
+   hineingegriffen.
+
+   Wer die Kastenmasse ändert, rechnet beides neu.
+   Verbot: nicht auf Bildschirmfotos und nicht auf Geräte. Dort ist
+   die Kante die Aussage. */
+.ref-fig.is-logo video, .ref-fig.is-logo img {
+  transform: scale(1.12);
+  filter: brightness(0.97);
+  -webkit-mask-image: radial-gradient(ellipse 48% 49% at 50% 50%, #000 62%, transparent 100%);
+          mask-image: radial-gradient(ellipse 48% 49% at 50% 50%, #000 62%, transparent 100%);
+}
+
+/* ---- Störer · der runde Hinweis -------------------------------
+   Ein Kreis in Lime mit schwarzer Schrift, leicht schräg. Der eine
+   Ort im System, an dem etwas laut sein darf - er sagt, was man tun
+   oder wissen soll, und sonst nichts.
+
+   Leicht gedreht, nicht gerade: Ein gerader Kreis auf einem Raster
+   sieht aus wie ein Bauteil, ein schiefer wie ein Aufkleber. Nur ein
+   Aufkleber wird gelesen.
+
+   VERBOT: höchstens einer pro Deck. Zwei Störer stören sich. Und
+   niemals über Text legen - er sucht sich eine freie Ecke, sonst
+   nimmt er der Folie mehr als er gibt. */
+.stoerer {
+  position: absolute; z-index: 5;
+  width: 300px; height: 300px; border-radius: 50%;
+  background: var(--lime); color: var(--ink);
+  display: flex; align-items: center; justify-content: center;
+  text-align: center; padding: 30px; box-sizing: border-box;
+  /* `rotate`, NICHT `transform: rotate()`. Der Störer trägt `data-r`,
+     und das Reveal-System setzt darauf ein eigenes `transform` für
+     das Einblenden - eine Drehung im selben `transform` wird davon
+     überschrieben, und der Kreis steht gerade da. Die einzelne
+     `rotate`-Eigenschaft wird zusätzlich angewandt und überlebt.
+     Am 06.09.2026 genau daran gescheitert. */
+  rotate: -12deg;
+  font-family: var(--font-mono); font-weight: 700; font-size: 26px;
+  line-height: 1.22; letter-spacing: 0.01em;
+}
+/* Auf der Preisfolie sitzt er rechts neben den Karten, im leeren
+   Feld zwischen Kartenrand und Folienrand. Nachgemessen: Die Karten
+   enden bei x 1435, der Satzspiegel bei 1800. */
+.t-offer .stoerer { right: 120px; top: 300px; }
+
+/* ---- DOOH-Stele · Rahmen für Aussenwerbung -------------------
+   Der hochformatige Bruder von `.laptop`. Zeigt, wo eine Anzeige
+   gehangen hat - am Bahnhof, im Einkaufszentrum, an der Strasse.
+
+   Warum überhaupt ein Rahmen: Ein Plakatmotiv ohne Kontext sieht aus
+   wie eine Bilddatei. Im Rahmen wird daraus etwas, das jemand im
+   Vorbeigehen gesehen hat.
+
+   Der untere Rand ist dicker als die anderen drei. Das ist keine
+   Zierde: Echte Stelen haben unten Sensor, Lautsprecher und Logo, und
+   das Auge erkennt daran das Gerät. Bei gleichmässigem Rand liest es
+   sich als Bilderrahmen.
+
+   Höhe statt Breite begrenzt, weil Hochformate sonst unten aus der
+   Folie laufen - dieselbe Falle wie bei den Porträts.
+   Verbot: keine Marke, keine Spiegelung, kein Schatten. Wie beim
+   Laptop: Der Rahmen hält den Inhalt, er konkurriert nicht. */
+.dooh { display: flex; flex-direction: column; align-items: center; }
+
+/* Scharfe Ecken, dünner Rahmen, Sockel. Genau die drei Merkmale, die
+   eine Stele von einem Tablet unterscheiden - die erste Fassung am
+   06.09.2026 hatte runde Ecken, einen dicken unteren Rand und einen
+   gleichmässigen Rahmen und sah prompt aus wie ein iPad.
+   Der Rahmen ist bewusst schmal: Bei einem echten Gerät ist die
+   Fläche gross und der Rahmen klein, und genau daran liest das Auge
+   die Grösse ab. */
+.dooh-frame {
+  background: var(--ink); border-radius: 3px; padding: 10px;
+  position: relative; line-height: 0;
+}
+.dooh-frame img { display: block; max-height: 520px; width: auto; height: auto; }
+
+/* Glasspiegelung: ein flacher Streifen quer über die Scheibe. Ohne
+   sie ist die Fläche ein Bild, mit ihr eine Scheibe.
+   Verbot: nicht stärker als 0.08 - eine Spiegelung, die man ansieht
+   statt durch sie hindurch, verdeckt die Arbeit. */
+.dooh-frame::after {
+  content: ""; position: absolute; inset: 10px; pointer-events: none;
+  background: linear-gradient(112deg,
+    rgba(255,255,255,0) 34%,
+    rgba(255,255,255,0.08) 46%,
+    rgba(255,255,255,0.02) 55%,
+    rgba(255,255,255,0) 66%);
+}
+
+/* Der Sockel macht die Stele zur Stele. Breiter als der Rahmen und
+   flach - eine Stele steht, sie hängt nicht. */
+.dooh-fuss {
+  width: 46%; height: 14px; background: var(--ink);
+  border-radius: 0 0 3px 3px;
+}
+.slide.ink .dooh-frame, .slide.ink .dooh-fuss { background: var(--paper); }
+
+/* ---- .ref-fig.is-mockup · fotografisches Mockup ---------------
+   Wenn die Arbeit schon in einer Umgebung steckt, braucht sie keinen
+   gezeichneten Rahmen mehr. `.laptop` und `.dooh` bauen einen Rahmen,
+   weil ein nacktes Motiv sonst wie eine Bilddatei aussieht - ein
+   Mockup bringt Wand, Licht und Strasse selbst mit.
+
+   Zwei Rahmen übereinander wären einer zu viel: Das Foto zeigt bereits
+   einen Plakatkasten.
+
+   Hochformat, deshalb über die HÖHE begrenzt. Über die Breite gedacht
+   läuft es unten aus der Folie - dieselbe Falle wie bei den Porträts,
+   sie steht seit dem Bau in der CLAUDE.md. */
+.ref-fig.is-mockup { display: flex; align-items: center; justify-content: center; }
+.ref-fig.is-mockup img {
+  width: auto; height: auto; max-height: 600px; max-width: 100%;
+  object-fit: contain; transform: none; border-radius: var(--radius-sm);
+}
+
+/* ---- t-ref.bild-halb · Bild über die ganze rechte Hälfte ------
+   Statt eines Bildes in einer Spalte ein randabfallendes Feld über
+   die halbe Folie. Für fotografische Mockups, die eine Umgebung
+   mitbringen: Ein Strassenbild in einer Kachel ist ein Bild von einer
+   Strasse, randabfallend ist es eine Strasse.
+
+   Das Bild liegt ÜBER dem Lockup (z-index 6 gegen 5). Simons Entscheid
+   vom 06.09.2026, und er ist richtig: Ein Lockup, das auf einem Foto
+   klebt, ist schlechter als eines, das auf dieser einen Folie fehlt.
+   Es steht auf achtundzwanzig anderen.
+   Verbot: nicht auf Folien, die der Kunde als Einzelblatt bekommt -
+   dort ist die Marke die einzige Absenderangabe.
+
+   Die Textspalte wird begrenzt, weil das Raster hier auf eine Spalte
+   fällt. Ohne die Grenze liefe der Absatz unter das Bild. */
+.t-ref.bild-halb .ref { grid-template-columns: 1fr; }
+.t-ref.bild-halb .ref-body { max-width: 880px; }
+.t-ref.bild-halb .ref-fig {
+  position: absolute; top: 0; right: 0; bottom: 0; left: auto;
+  width: 46%; height: auto; aspect-ratio: auto;
+  overflow: hidden; z-index: 6; background: none; border-radius: 0;
+}
+.t-ref.bild-halb .ref-fig img {
+  width: 100%; height: 100%; max-width: none; max-height: none;
+  object-fit: cover; transform: none; border-radius: 0;
+}
