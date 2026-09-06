@@ -875,8 +875,55 @@
     return tief;
   }
 
+  /* Zweite Prüfung: überlappen sich Textblöcke?
+
+     Am 06.09.2026 auf einem iPad gesehen: Auf der Folie «Breiter» lag
+     der Fliesstext ÜBER den Beschriftungen, ohne unten hinauszulaufen.
+     Eine reine Unterkanten-Messung sieht das nicht.
+
+     Verglichen werden BLÖCKE - keine Inline-Elemente. Zwei Wörter
+     nebeneinander teilen sich die Zeilenhöhe und sind trotzdem keine
+     Überlappung; die erste Fassung dieser Prüfung hat genau daran
+     alle 29 Folien für kaputt erklärt. Deshalb zählt nur, was in
+     BEIDEN Achsen übereinanderliegt, und nur bei Elementen, die
+     selbst einen Kasten bilden.
+     Absolut Positioniertes ist ausgenommen: Störer, Bildunter-
+     schriften und Beschriftungen liegen mit Absicht über anderem. */
+  var BLOCKARTIG = { block: 1, flex: 1, grid: 1, 'list-item': 1, 'inline-block': 1, table: 1, 'table-row': 1, 'table-cell': 1 };
+
+  function ueberlappt(s) {
+    var kaesten = [];
+    var alle = s.querySelectorAll('*');
+    for (var k = 0; k < alle.length; k++) {
+      var n = alle[k];
+      if (n.closest('.spur') || n.classList.contains('wi') || n.classList.contains('w')) continue;
+      var cs = getComputedStyle(n);
+      if (cs.position === 'absolute' || cs.position === 'fixed') continue;
+      if (!BLOCKARTIG[cs.display]) continue;
+      var hatText = false;
+      for (var c = 0; c < n.childNodes.length; c++) {
+        if (n.childNodes[c].nodeType === 3 && n.childNodes[c].textContent.trim()) { hatText = true; break; }
+      }
+      if (!hatText) continue;
+      var x = 0, y = 0, e = n;
+      while (e && e !== s) { x += e.offsetLeft; y += e.offsetTop; e = e.offsetParent; }
+      kaesten.push({ n: n, l: x, r: x + n.offsetWidth, o: y, u: y + n.offsetHeight });
+    }
+    for (var a = 0; a < kaesten.length; a++) {
+      for (var b = a + 1; b < kaesten.length; b++) {
+        var A = kaesten[a], B = kaesten[b];
+        if (A.n.contains(B.n) || B.n.contains(A.n)) continue;
+        /* 4px Toleranz je Achse: Zeilenabstände dürfen sich berühren. */
+        var yUeber = A.o < B.u - 4 && B.o < A.u - 4;
+        var xUeber = A.l < B.r - 4 && B.l < A.r - 4;
+        if (yUeber && xUeber) return true;
+      }
+    }
+    return false;
+  }
+
   function passt(s) {
-    return tiefsterText(s) <= s.clientHeight + 2;
+    return tiefsterText(s) <= s.clientHeight + 2 && !ueberlappt(s);
   }
 
   function nachmessen() {
@@ -900,6 +947,12 @@
   fit();
   nachmessen();
   if (document.fonts && document.fonts.ready) { document.fonts.ready.then(nachmessen); }
+  /* Mehrmals nachsehen. Safari wendet seine Schriftautomatik nicht
+     zwingend vor dem ersten Messen an, und Schriften kommen verzögert.
+     Drei Blicke kosten nichts und schliessen die Lücke, in der eine
+     Folie kurz falsch gemessen wurde. */
+  [400, 1200, 3000].forEach(function (ms) { setTimeout(nachmessen, ms); });
+  document.addEventListener('slidechange', function () { nachmessen(); });
   var nmT;
   addEventListener('resize', function () { clearTimeout(nmT); nmT = setTimeout(nachmessen, 200); });
 

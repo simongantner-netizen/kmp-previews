@@ -30,9 +30,22 @@
    Schriftgrösse eigenmächtig ändert, ist unschöner.
    VERBOT: diese Zeile nie entfernen. Sie kostet nichts und hält die
    Bühne zusammen. */
-html, body, .stage, .slide {
-  -webkit-text-size-adjust: 100% !important;
-  text-size-adjust: 100% !important;
+html, body, .stage, .slide, .slide * {
+  /* `none`, nicht `100%`. Beides soll dasselbe bedeuten, aber WebKit
+     behandelt sie nicht gleich: Mit `100%` hat das iPad am 06.09.2026
+     weiter aufgeblasen - eine Überschrift mit festem Zeilenumbruch
+     brach in fünf statt drei Zeilen, und der Fliesstext legte sich auf
+     die Beschriftungen darunter. `none` schaltet den Autosizer ab,
+     statt ihm einen Faktor vorzuschlagen.
+     Und auf ALLEN Elementen, nicht nur auf den Vorfahren: Der
+     Autosizer entscheidet je Textblock, nicht je Dokument.
+
+     Der übliche Einwand gegen `none` ist, dass es das Zoomen mit zwei
+     Fingern behindert. Das gilt für Fliesstext-Seiten. Hier liegt eine
+     feste Bühne vor, die ohnehin auf das Fenster gerechnet wird -
+     und der Nutzer kann weiterhin zoomen, die Automatik nicht. */
+  -webkit-text-size-adjust: none !important;
+  text-size-adjust: none !important;
 }
 html { background: var(--paper); color: var(--ink); }
 
