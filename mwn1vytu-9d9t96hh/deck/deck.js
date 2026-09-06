@@ -268,14 +268,14 @@
   var fsBtn = document.createElement('button');
   fsBtn.className = 'fsbtn';
   fsBtn.type = 'button';
-  fsBtn.textContent = 'VOLLBILD';
+  fsBtn.innerHTML = 'VOLLBILD<span class="k">F</span>';
   leiste.appendChild(fsBtn);
 
   var ovBtn = document.createElement('button');
   ovBtn.className = 'fsbtn ovbtn';
   ovBtn.type = 'button';
   ovBtn.setAttribute('aria-label', 'Folienübersicht öffnen, Taste O');
-  ovBtn.innerHTML = '<span class="k">O</span> ÜBERSICHT';
+  ovBtn.innerHTML = 'ÜBERSICHT<span class="k">O</span>';
   ovBtn.addEventListener('click', function (e) {
     e.preventDefault();
     ov.classList.toggle('on');
@@ -286,7 +286,7 @@
 
   var blaettern = document.createElement('span');
   blaettern.className = 'ctrl-hint';
-  blaettern.innerHTML = '<span class="k">\u2190</span><span class="k">\u2192</span> BL\u00c4TTERN';
+  blaettern.innerHTML = '\u2190\u2009\u2192\u2002BL\u00c4TTERN';
   leiste.appendChild(blaettern);
 
   document.body.appendChild(leiste);

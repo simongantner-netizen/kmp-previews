@@ -144,6 +144,10 @@ body { background: var(--ink); }
 .ctrl {
   position: fixed; z-index: 60; left: 24px; bottom: 20px;
   display: flex; align-items: center; gap: 10px;
+  /* Umbruch statt Überlauf: Auf einem Telefon ist die Leiste breiter
+     als der Schirm, und dann wurde «BLÄTTERN» rechts abgeschnitten.
+     Sie liegt ohnehin im schwarzen Rand, dort ist Platz nach unten. */
+  flex-wrap: wrap; max-width: calc(100vw - 48px);
   transition: opacity 600ms var(--ease-out);
 }
 .ctrl.weg { opacity: 0; pointer-events: none; }
@@ -159,24 +163,16 @@ body { background: var(--ink); }
               border-color var(--dur-base) var(--ease-out),
               background-color var(--dur-base) var(--ease-out);
 }
-/* Die Taste im Knopf. Sie steht drin, weil das Deck auch gelesen wird,
-   ohne dass jemand die Tastenkürzel kennt - und der Knopf funktioniert
-   auf dem Telefon, wo es kein O gibt. */
-.ctrl-hint {
-  font-family: var(--font-mono); font-weight: 500; font-size: 11px;
-  letter-spacing: var(--tracking-eyebrow);
-  color: rgba(240,240,240,0.5);
-  padding-left: 4px; pointer-events: none; white-space: nowrap;
-}
-.ctrl-hint[hidden] { display: none; }
-.ctrl-hint .k { margin-right: 4px; }
-.ctrl-hint .k + .k { margin-left: -2px; }
-
-.ovbtn .k, .ctrl-hint .k {
-  display: inline-block; min-width: 14px; margin-right: 7px;
-  padding: 1px 3px 0;
-  border: 1px solid currentColor; border-radius: 3px;
-  text-align: center; font-size: 10px; line-height: 1.25; opacity: 0.9;
+/* Die Taste steht HINTER dem Wort, klein und gedämpft - kein Kästchen.
+   Die erste Fassung vom 06.09.2026 setzte sie als umrandeten Tastenkopf
+   davor. Auf dem Telefon brach der Knopf dadurch auf zwei Zeilen um und
+   sah aus wie ein Formularfeld; auf dem Laptop war es unruhig. Ein
+   Hinweis darf nicht lauter sein als das, worauf er hinweist.
+   VERBOT: keine Tastenkästchen. Wer sie wieder einbaut, baut eine
+   Werkzeugleiste. */
+.fsbtn .k {
+  margin-left: 9px; font-size: 10px; opacity: 0.55;
+  letter-spacing: 0;
 }
 /* Im Vollbild ist der Knopf weg - Esc bringt einen raus, und auf der
    Folie soll nichts stehen, was nicht zur Folie gehört. Die Regel ist
@@ -2562,7 +2558,7 @@ body { background: var(--ink); }
    --fs-giant anhebt, sprengt jede Folie, auf der die Überschrift
    heute schon zwei Zeilen braucht. */
 :root[data-klein="1"] {
-  --fs-body:     30px;   /* war 21 → 10.8px auf dem Schirm */
+  --fs-body:     28px;   /* war 21 → 10.1px auf dem Schirm */
   --fs-small:    28px;   /* war 18 →  10.1 */
   --fs-meta:     26px;   /* war 15 →   9.4 */
   --fs-eyebrow:  26px;   /* war 16 →   9.4 */
@@ -2597,9 +2593,26 @@ body { background: var(--ink); }
 :root[data-klein="1"] .offer-card .price small { font-size: 26px; }
 :root[data-klein="1"] .track-step p        { font-size: 23px; }
 :root[data-klein="1"] .service li          { font-size: 27px; }
-:root[data-klein="1"] .person p            { font-size: 28px; }
+:root[data-klein="1"] .person p            { font-size: 26px; }
 :root[data-klein="1"] .proof p             { font-size: 29px; }
 :root[data-klein="1"] .track-step h4       { font-size: 26px; }
 /* Referenztexte sind die längsten Absätze im Deck - der Limeco-Fall
    lief mit 30px um 38px aus der Folie. 27px ist die gemessene Grenze. */
 :root[data-klein="1"] .ref-body p          { font-size: 27px; }
+/* Die grössere Überzeile schiebt auf `t-cards` alles um rund 14px
+   nach unten, und die Schlusszeile lief dadurch 11px aus der Folie.
+   Der Abstand darüber gibt sie her - besser als die Schrift wieder
+   kleiner zu machen, die ja gerade lesbar werden soll. */
+:root[data-klein="1"] .t-cards .fill-line  { margin-top: 28px; }
+/* Dieselbe Mechanik auf `t-leistung`: Die Fussnote unten lief 19px
+   heraus, seit die Kleinschrift grösser ist. Auch hier gibt der
+   Abstand nach, nicht die Schrift. */
+/* `t-leistung` bleibt AUSSEN VOR. Der Typ ist eine dichte Auf-
+   stellung mit fester Zeilenmechanik; jede Vergrösserung schob die
+   Fussnote aus der Folie, und zwar unabhängig vom Fliesstext -
+   nachgemessen am 06.09.2026 in drei Anläufen (19, 14, 13 px).
+   Auf einem Telefon ist der Text dort also so klein wie zuvor. Das
+   ist die bessere Wahl: eine Aufstellung, die man notfalls
+   heranzoomt, schlägt eine, die unten abgeschnitten ist.
+   VERBOT: hier nichts vergrössern, ohne die Fussnote nachzumessen. */
+:root[data-klein="1"] .t-leistung          { --fs-body: 21px; --fs-small: 18px; --fs-meta: 15px; }
