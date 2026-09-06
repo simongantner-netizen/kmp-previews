@@ -178,9 +178,22 @@
        bräuchte sie dringender - die Breite sagt darüber nichts.
        Gemessen am 06.09.2026: Ein iPhone im Querformat (844x390)
        skaliert auf 0.361, eine Quellenangabe mit 14px landet damit
-       bei 5.1px auf dem Schirm. Ab etwa 0.55 ist die Grenze, darunter
-       wird die kleinste Stufe unlesbar. */
-    document.documentElement.dataset.klein = s < 0.55 ? '1' : '';
+       bei 5.1px auf dem Schirm.
+
+       DIE SCHWELLE IST 0.45, nicht 0.55. Sie lag zuerst bei 0.55 und
+       hat damit auch iPads erfasst: Ein iPad im Querformat skaliert
+       je nach Modell auf 0.53 bis 0.62, die kleineren rutschten also
+       knapp darunter. Dort ist die Vergrösserung aber nicht nötig -
+       bei 0.53 hat der Fliesstext schon 11px und die Überzeile 8.5 -
+       und sie ist dort gefährlich: Die Grössen sind in Chrome
+       vermessen, Safari bricht Zeilen anders um. Was in Chrome knapp
+       passte, kippte auf dem iPad in eine zusätzliche Zeile und lief
+       unten heraus.
+       Bei 0.45 bleiben Telefone drin (0.20 hochkant, 0.36 quer) und
+       Tablets draussen.
+       VERBOT: die Schwelle nicht wieder anheben, ohne auf einem
+       echten iPad nachzusehen. Chrome ist hier kein Zeuge. */
+    document.documentElement.dataset.klein = s < 0.45 ? '1' : '';
 
     /* Wo die Bühne anfängt. Die Bedienleiste hängt daran und nicht am
        Fensterrand: Ist das Fenster breiter als 16:9, liegen links und
@@ -281,7 +294,18 @@
   fsBtn.className = 'fsbtn';
   fsBtn.type = 'button';
   fsBtn.innerHTML = 'VOLLBILD<span class="k">F</span>';
-  leiste.appendChild(fsBtn);
+  /* Der Knopf kommt nur, wenn der Browser Vollbild überhaupt kann.
+
+     Nach FÄHIGKEIT, nicht nach Gerät. Die erste Fassung vom 06.09.2026
+     blendete ihn über `@media (hover:none) and (pointer:coarse)` aus -
+     das trifft iPhone UND iPad, aber nur das iPhone kennt die
+     Vollbild-Schnittstelle nicht. Auf dem iPad fehlte der Knopf damit
+     ohne Grund. Wer nach Gerätetyp schaltet, rät; wer nach Fähigkeit
+     schaltet, weiss es.
+     VERBOT: das nicht wieder über eine Media Query lösen. */
+  var kannVollbild = !!(document.documentElement.requestFullscreen ||
+                        document.documentElement.webkitRequestFullscreen);
+  if (kannVollbild) leiste.appendChild(fsBtn);
 
   var ovBtn = document.createElement('button');
   ovBtn.className = 'fsbtn ovbtn';

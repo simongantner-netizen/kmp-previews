@@ -215,7 +215,10 @@ body { background: var(--ink); }
 .w-tipp { display: none; }
 
 @media (hover: none) and (pointer: coarse) {
-  .fsbtn:not(.ovbtn) { display: none; }
+  /* Der Vollbild-Knopf wird hier NICHT mehr versteckt - das erledigt
+     `deck.js` nach Fähigkeit, damit das iPad ihn behält. Hier bleibt
+     nur, was wirklich an der Eingabeart hängt: Tastenhinweise ohne
+     Tastatur und der Blätter-Hinweis. */
   .fsbtn .k { display: none; }
   .w-taste { display: none; }
   .w-tipp  { display: inline; }
