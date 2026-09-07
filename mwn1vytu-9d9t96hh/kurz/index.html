@@ -12,14 +12,14 @@
 <link rel="preload" href="../assets/fonts/Calibre-Regular.otf"  as="font" type="font/otf" crossorigin>
 <link rel="preload" href="../assets/fonts/Calibre-Black.otf"    as="font" type="font/otf" crossorigin>
 <!-- Vor dem Stylesheet, mit Absicht: Die Schriften stehen am Ende einer
-     @import-Kette (styles.css?v=202609071802 → tokens/fonts.css) und werden sonst erst
+     @import-Kette (styles.css?v=202609071914 → tokens/fonts.css) und werden sonst erst
      entdeckt, wenn das ganze CSS geladen und geparst ist. Der
      Preload-Scanner des Browsers findet diese Zeilen dagegen sofort,
      noch bevor er den <head> fertig gelesen hat.
      `crossorigin` ist Pflicht, auch bei gleicher Herkunft - Schriften
      werden immer im CORS-Modus geholt, und ohne das Attribut lädt der
      Browser sie ein zweites Mal. -->
-<link rel="stylesheet" href="../styles.css?v=202609071802">
+<link rel="stylesheet" href="../styles.css?v=202609071914">
 </head>
 <body>
 <div class="viewport">
@@ -672,9 +672,11 @@
 
          Die Unterzeile behauptet eine Mischung aus Kampagnons- und
          webtie-Arbeiten. Am 05.09.2026 war das noch eine Ankündigung,
-         weil nur Siato dahinterstand. Inzwischen tragen Reliag,
-         WSH-Support und NRG GYM den Satz - Gate erledigt. Fallen
-         diese drei je weg, fällt die Zeile mit. → Fakten-Gate
+         weil nur Siato dahinterstand. Inzwischen tragen WSH-Support
+         und NRG GYM den Satz - Gate erledigt. Reliag ist am 07.09.2026
+         auf Simons Ansage aus der Strecke geflogen; zwei webtie-Arbeiten
+         tragen die Zeile weiterhin. Fällt eine weitere weg, fällt die
+         Zeile mit. → Fakten-Gate
          ============================================================ -->
     <section class="slide ink t-chapter" data-title="Kapitel Referenzen">
       <!-- Ohne die grosse Kapitelnummer. `t-chapter` bringt sie mit, und
@@ -1071,44 +1073,21 @@
       </div>
     </section>
 
-    <!-- ============================================================
-         REFERENZ · Reliag (webtie)
-         Der Text beschreibt nur, was auf ihrer eigenen Seite steht:
-         Gewerbeflächen, Kanton Aargau. Alles Weitere wäre erfunden.
-
-         Gebaut UND betreut, von Simon bestätigt am 05.09.2026 - das
-         gilt für alle drei webtie-Referenzen. Kurz stand dafür ein
-         eigener Chip «Betrieb» da; am 06.09.2026 wieder raus, auf
-         Simons Entscheid. Wer die Leistung ausweisen will, tut das im
-         Text, nicht mit einem vierten Chip: Die Chipzeile ist eine
-         Übersicht, keine Leistungsliste.
-         ============================================================ -->
-    <section class="slide t-ref" data-title="Referenz Reliag">
-      <div class="eyebrow" data-r="1">05 – Für wen wir arbeiten</div>
-      <div class="ref">
-        <div class="ref-body">
-          <h1 data-r="2" data-rise>Reliag</h1>
-          <div class="ref-tags" data-r="3"><span>webtie</span><span>Web</span></div>
-          <p data-r="4">Reliag vermittelt Gewerbeflächen im Kanton Aargau. Wer eine Halle mietet, unterschreibt für Jahre – die Seite muss deshalb zwei Dinge gleichzeitig leisten: Objekte zeigen und Vertrauen aufbauen.</p>
-          <a class="linkbtn is-lime" data-r="5" href="https://reliag.ch/" target="_blank" rel="noopener">reliag.ch</a>
-        </div>
-        <div class="ref-fig is-device" data-r="3">
-          <div class="laptop">
-            <div class="laptop-lid">
-              <div class="laptop-view"><img src="../assets/works/reliag.png" alt="Reliag"></div>
-            </div>
-            <div class="laptop-foot"></div>
-          </div>
-        </div>
-      </div>
-    </section>
 
     <!-- ============================================================
          REFERENZ · WSH-Support (webtie)
          Grundlage ist ihre eigene Beschreibung: «Ihre Brücke zu
          effizienter Sozialhilfe, individuell, effizient, unterstützend
          ab Tag eins.» Nichts dazuerfunden.
-         Gebaut und betreut, siehe Reliag.
+
+         Gebaut UND betreut, von Simon bestätigt am 05.09.2026 - das
+         gilt für beide verbliebenen webtie-Referenzen. Kurz stand dafür
+         ein eigener Chip «Betrieb» da; am 06.09.2026 wieder raus, auf
+         Simons Entscheid. Wer die Leistung ausweisen will, tut das im
+         Text, nicht mit einem vierten Chip: Die Chipzeile ist eine
+         Übersicht, keine Leistungsliste.
+         (Diese Begründung stand bis zum 07.09.2026 beim Reliag-Block,
+         der an dem Tag aus der Strecke genommen wurde.)
          ============================================================ -->
     <section class="slide t-ref" data-title="Referenz WSH-Support">
       <div class="eyebrow" data-r="1">05 – Für wen wir arbeiten</div>
@@ -1353,6 +1332,6 @@
      sechs Sekunden aus und war auf einem Telefon 4px gross - gesehen
      hat ihn dort niemand. Die Leiste trägt es jetzt allein. -->
 
-<script src="../deck/deck.js?v=202609071802"></script>
+<script src="../deck/deck.js?v=202609071914"></script>
 </body>
 </html>
