@@ -12,14 +12,14 @@
 <link rel="preload" href="../assets/fonts/Calibre-Regular.otf"  as="font" type="font/otf" crossorigin>
 <link rel="preload" href="../assets/fonts/Calibre-Black.otf"    as="font" type="font/otf" crossorigin>
 <!-- Vor dem Stylesheet, mit Absicht: Die Schriften stehen am Ende einer
-     @import-Kette (styles.css?v=202609070905 → tokens/fonts.css) und werden sonst erst
+     @import-Kette (styles.css?v=202609071735 → tokens/fonts.css) und werden sonst erst
      entdeckt, wenn das ganze CSS geladen und geparst ist. Der
      Preload-Scanner des Browsers findet diese Zeilen dagegen sofort,
      noch bevor er den <head> fertig gelesen hat.
      `crossorigin` ist Pflicht, auch bei gleicher Herkunft - Schriften
      werden immer im CORS-Modus geholt, und ohne das Attribut lädt der
      Browser sie ein zweites Mal. -->
-<link rel="stylesheet" href="../styles.css?v=202609070905">
+<link rel="stylesheet" href="../styles.css?v=202609071735">
 </head>
 <body>
 <div class="viewport">
@@ -1132,42 +1132,68 @@
          braucht ein Deck, das jemand vorträgt - eines, das gelesen
          wird, braucht die Summe und die Fussnote.
 
-         `cols-2` GIBT es im Standard - es ist am 03.09.2026 aus dem
-         Gesprächsdeck dorthin zurückgewandert. Hier stand es trotzdem
-         inline, weil dieses Deck eine veraltete Kopie der CSS hatte.
-         Seit dem 05.09.2026 ist die Kopie wieder auf Stand, und die
-         Folie benutzt die Klasse.
+         Am 07.09.2026 von zwei auf DREI Karten umgebaut: Die
+         Projektleitung ist eine eigene Position in der Offerte
+         geworden und muss deshalb auch hier stehen. `cols-2` ist
+         dafür weggefallen - `.offer-grid` ist im Standard ohnehin
+         dreispaltig, es braucht keine eigene Klasse.
 
          ⚠️ Die Zahlen müssen mit der Offerte A260005 übereinstimmen.
          Wer eine ändert, ändert beide. Zwei Wahrheiten über den Preis
          sind schlimmer als gar keine.
+         Stand 07.09.2026: 7’200 / 9’000 / 1’800 = 18’000, minus 10 %
+         Rabatt = 16’200. Intern sind das 100 kalkulierte Stunden zu
+         180, davon 90 verrechnet - diese Rechnung fällt NIE, weder
+         auf der Folie noch im Gespräch.
 
-         Die beiden Optionen (Claim 1’200, Fotoshooting 1’400) sind am
-         06.09.2026 von der Folie genommen worden, auf Simons Entscheid.
-         In der Offerte stehen sie weiter - dort gehören sie hin, weil
-         man dort abhaken kann. Auf einer Folie wären sie eine vierte
-         Zahl neben drei anderen und würden die Summe unscharf machen.
+         Der Störer ist am 07.09.2026 von dieser Folie verschwunden.
+         Zwei Gründe: Mit drei Karten füllt das Grid die ganze Bühne,
+         und der Kreis lag über der dritten Karte. Und er sagte
+         («Details in der separaten Offerte») dasselbe wie die
+         Fussnote und der Knopf auf dem Abbinder - dreimal derselbe
+         Satz auf einem Deck. Den Lime-Akzent trägt jetzt der Rabatt,
+         und das ist der bessere Ort dafür.
+
+         Der Rabatt steht bewusst auf der Folie und nicht nur in der
+         Offerte: Ein Nachlass, den man erst im Kleingedruckten findet,
+         wirkt wie ein Trick. Einer, der neben der Summe steht, ist ein
+         Argument. Die Begründung dazu (zweiter gemeinsamer Kunde mit
+         webtie) bleibt in der Offerte und im Gesagten - auf der Folie
+         wäre sie eine Rechtfertigung.
+
+         Die Optionen (Claim 1’200) sind am 06.09.2026 von der Folie
+         genommen worden, auf Simons Entscheid. In der Offerte stehen
+         sie weiter - dort gehören sie hin, weil man dort abhaken kann.
+         Auf einer Folie wären sie eine weitere Zahl und würden die
+         Summe unscharf machen.
          ============================================================ -->
     <section class="slide t-offer" data-title="Was das kostet">
       <div class="eyebrow" data-r="1">06 – Was das kostet</div>
       <h1 data-r="2" data-rise style="margin-bottom:36px;">Unser Angebot für eure <span class="hl">Marke und Website</span>.</h1>
-      <div class="stoerer" data-r="6">Details in der separaten Offerte</div>
-      <div class="offer-grid cols-2">
+      <!-- Derselbe Kundenfreigabe-Link wie auf dem Abbinder. Er steht
+           zweimal im Deck, weil die Frage an zwei Stellen entsteht:
+           hier, wo die Zahlen stehen, und dort, wo es um den nächsten
+           Schritt geht. Zwei Wege zum selben Ziel sind erlaubt - zwei
+           verschiedene Ziele wären es nicht.
+           Position ist nachgemessen: Der Kreis schneidet die Ecke von
+           Block 3 an und hält 20 px Abstand zum nächsten Buchstaben. -->
+      <a class="stoerer is-link" data-r="6" href="https://kampagnons.mocoapp.com/offers/2447178/customer_approvals/50554f8d855739420712528d940013fc" target="_blank" rel="noopener">Hier klicken für unser Angebot</a>
+      <div class="offer-grid">
         <div class="offer-card" data-r="3">
           <span class="tier">Block 1</span>
           <h3>Marke</h3>
           <div class="price">7’200<small> CHF</small></div>
           <ul>
-            <li>Markenbild und Designroute</li>
-            <li>Logo und Signet</li>
+            <li>Logo- und Designrouten</li>
+            <li>Reinzeichnung Logo</li>
             <li>Designsystem: Farbe, Schrift, die Spur</li>
-            <li>Anwendungen: Karten, Briefpapier, Flyer, Fahrzeug</li>
+            <li>Anwendungen: Karten, Briefpapier, Flyer</li>
           </ul>
         </div>
         <div class="offer-card" data-r="4">
           <span class="tier">Block 2</span>
           <h3>Website</h3>
-          <div class="price">9’300<small> CHF</small></div>
+          <div class="price">9’000<small> CHF</small></div>
           <ul>
             <li>Konzept und Struktur</li>
             <li>Design für Desktop und Handy</li>
@@ -1175,11 +1201,25 @@
             <li>Inhalt, Feinschliff und Go-live</li>
           </ul>
         </div>
+        <div class="offer-card" data-r="5">
+          <span class="tier">Block 3</span>
+          <h3>Projektleitung</h3>
+          <div class="price">1’800<small> CHF</small></div>
+          <ul>
+            <li>Ein Ansprechpartner, auch fürs Technische</li>
+            <li>Termine vorbereiten und führen</li>
+            <li>Koordination mit webtie</li>
+            <li>Go-live vor Weihnachten</li>
+          </ul>
+        </div>
       </div>
-      <p class="small" data-r="5" style="margin-top:32px; text-align:center; font-size:26px;">
-        Zusammen <strong>16’500 CHF</strong>.
+      <p class="small" data-r="6" style="margin-top:28px; text-align:center; font-size:26px;">
+        Zusammen 18’000 CHF, abzüglich <span class="hl"><strong>10 % Rabatt</strong></span>.
       </p>
-      <p class="small" data-r="6" style="margin-top:14px; text-align:center; opacity:0.6;">
+      <p class="small" data-r="6" style="margin-top:8px; text-align:center; font-size:36px;">
+        <strong>16’200 CHF</strong>
+      </p>
+      <p class="small" data-r="7" style="margin-top:12px; text-align:center; opacity:0.6;">
         Kampagnons ist (noch) nicht mehrwertsteuerpflichtig. Jede Position im Detail steht in der Offerte.
       </p>
     </section>
@@ -1234,6 +1274,19 @@
         <div class="contact-row" data-r="4"><dt>Ansprechperson</dt><dd>Simon Gantner · Kampagnons, Zürich</dd></div>
         <div class="contact-row" data-r="5"><dt>Kontakt</dt><dd><a href="tel:+41774384575">+41 77 438 45 75</a> · <a href="https://kampagnons.ch">kampagnons.ch</a></dd></div>
       </dl>
+      <!-- Der Kundenfreigabe-Link aus MOCO, am 07.09.2026 von Simon
+           geliefert. NICHT die interne Ansicht (/offers/2447178) - die
+           führt Petra und Christian auf eine Loginmaske.
+
+           Zwei Dinge, die man über diesen Link wissen muss:
+           1. MOCO stempelt darauf «vom Kunden angesehen». Wer ihn zum
+              Testen öffnet, legt eine Spur, die aussieht wie Petra.
+           2. Über ihn lässt sich die Offerte auch ANNEHMEN. Er gehört
+              deshalb nur in dieses Deck und in keine öffentliche Seite.
+
+           Läuft die Offerte ab oder wird sie ersetzt, stirbt der Link.
+           Dann muss auch dieser Knopf nachgezogen werden. -->
+      <a class="deck-cta" data-r="6" href="https://kampagnons.mocoapp.com/offers/2447178/customer_approvals/50554f8d855739420712528d940013fc" target="_blank" rel="noopener">Hier klicken für unser Angebot</a>
     </section>
 
 
@@ -1251,6 +1304,6 @@
      sechs Sekunden aus und war auf einem Telefon 4px gross - gesehen
      hat ihn dort niemand. Die Leiste trägt es jetzt allein. -->
 
-<script src="../deck/deck.js?v=202609070905"></script>
+<script src="../deck/deck.js?v=202609071735"></script>
 </body>
 </html>

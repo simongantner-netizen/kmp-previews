@@ -2605,6 +2605,73 @@ body { background: var(--ink); }
 .stoerer { right: 120px; top: 260px; }
 .t-offer .stoerer { right: 120px; top: 300px; }
 
+/* ---- .stoerer.is-link · der Störer, der irgendwohin führt ------
+   Der sprechende Störer sitzt in leerem Feld und darf gross sein.
+   Dieser hier sitzt neben Inhalt und ist deshalb kleiner: Er soll
+   auffallen, nicht zudecken. Er hebt sich beim Zeigen leicht an -
+   ohne dieses Anheben sieht ein Kreis auf einer Folie nicht nach
+   etwas aus, das man anklicken kann.
+
+   `scale` als eigene Eigenschaft, NICHT `transform: scale()`, aus
+   demselben Grund wie das `rotate` oben: Das Reveal-System belegt
+   `transform` schon, und die Drehung ginge verloren.
+
+   ⚠️ Er DARF eine Kante anschneiden, aber nie Text verdecken. Und
+   beim Prüfen gilt: Der Kreis ist rund, seine Bounding Box nicht.
+   Zwei sich überschneidende Rechtecke heissen hier gar nichts -
+   gemessen wird der Abstand vom Mittelpunkt zum nächsten Textpunkt
+   gegen den Radius. Am 07.09.2026 fürs Naturspur-Deck gebaut. */
+.stoerer.is-link {
+  width: 210px; height: 210px; padding: 26px;
+  font-size: 19px; line-height: 1.25;
+  text-decoration: none; cursor: pointer;
+  transition: scale 0.25s ease;
+}
+.stoerer.is-link:hover { scale: 1.06; }
+/* Oben rechts, an der Ecke der letzten Karte. Die genauen Werte
+   sind nachgemessen, nicht geschätzt - siehe Warnung oben. */
+.t-offer .stoerer.is-link { right: 34px; top: 176px; }
+
+/* ---- .deck-cta · der einzige Knopf im System -------------------
+   Ein Deck, das jemand vorträgt, braucht keinen Knopf - da klickt
+   niemand. Dieser hier ist für den anderen Fall: ein Deck, das
+   jemand allein liest und aus dem heraus er etwas öffnen soll.
+   Eine Offerte, einen Prototyp, ein Video.
+
+   Genau EINER pro Deck. Wer zwei Ziele anbietet, bekommt keines
+   geklickt. Und nie als Ersatz für den Abbinder: Der Knopf führt
+   irgendwohin, der Abbinder sagt, was als Nächstes passiert.
+   Er gehört unter den Abbinder, nicht an seine Stelle.
+
+   Der Pfeil sitzt im ::after, nicht im Markup - so kann er beim
+   Hover wandern, ohne dass der Text mitspringt.
+
+   ⚠️ Das Ziel ist immer ein Link, den der EMPFÄNGER öffnen kann.
+   Eine interne Ansicht (MOCO, ein Admin, ein Entwurf) führt ihn
+   auf eine Loginmaske und lässt das ganze Deck unfertig aussehen.
+   Am 07.09.2026 fürs Naturspur-Deck gebaut. */
+.deck-cta {
+  display: inline-flex; align-items: center; gap: 14px;
+  /* `align-self` ist hier kein Feinschliff, sondern der ganze Trick:
+     Die Folien sind Flex-Spalten, und ein Flex-Kind wird ohne diese
+     Zeile auf die volle Bühnenbreite gedehnt - aus dem Knopf wird
+     ein Balken. `inline-flex` allein hilft nicht, das wirkt nur
+     nach innen. */
+  align-self: flex-start;
+  margin-top: 44px; padding: 18px 36px;
+  border: var(--border-ink); border-radius: var(--radius-pill);
+  font-family: var(--font-mono); font-weight: 600; font-size: 21px;
+  line-height: 1; color: var(--ink); background: transparent;
+  text-decoration: none; cursor: pointer;
+  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+.deck-cta::after { content: "\2192"; display: inline-block; transition: transform 0.25s ease; }
+.deck-cta:hover { background: var(--ink); color: var(--paper); }
+.deck-cta:hover::after { transform: translateX(5px); }
+.slide.ink .deck-cta { border-color: var(--paper); color: var(--paper); }
+.slide.ink .deck-cta:hover { background: var(--paper); color: var(--ink); }
+
+
 /* ---- DOOH-Stele · Rahmen für Aussenwerbung -------------------
    Der hochformatige Bruder von `.laptop`. Zeigt, wo eine Anzeige
    gehangen hat - am Bahnhof, im Einkaufszentrum, an der Strasse.
