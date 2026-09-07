@@ -12,14 +12,14 @@
 <link rel="preload" href="../assets/fonts/Calibre-Regular.otf"  as="font" type="font/otf" crossorigin>
 <link rel="preload" href="../assets/fonts/Calibre-Black.otf"    as="font" type="font/otf" crossorigin>
 <!-- Vor dem Stylesheet, mit Absicht: Die Schriften stehen am Ende einer
-     @import-Kette (styles.css?v=202609070805 → tokens/fonts.css) und werden sonst erst
+     @import-Kette (styles.css?v=202609070905 → tokens/fonts.css) und werden sonst erst
      entdeckt, wenn das ganze CSS geladen und geparst ist. Der
      Preload-Scanner des Browsers findet diese Zeilen dagegen sofort,
      noch bevor er den <head> fertig gelesen hat.
      `crossorigin` ist Pflicht, auch bei gleicher Herkunft - Schriften
      werden immer im CORS-Modus geholt, und ohne das Attribut lädt der
      Browser sie ein zweites Mal. -->
-<link rel="stylesheet" href="../styles.css?v=202609070805">
+<link rel="stylesheet" href="../styles.css?v=202609070905">
 </head>
 <body>
 <div class="viewport">
@@ -1251,6 +1251,6 @@
      sechs Sekunden aus und war auf einem Telefon 4px gross - gesehen
      hat ihn dort niemand. Die Leiste trägt es jetzt allein. -->
 
-<script src="../deck/deck.js?v=202609070805"></script>
+<script src="../deck/deck.js?v=202609070905"></script>
 </body>
 </html>

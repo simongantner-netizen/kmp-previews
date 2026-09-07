@@ -856,7 +856,28 @@
 
      Nur die Unterkante, nicht die Seite: Was zu breit ist, bricht um;
      was zu hoch ist, verschwindet. Alle Fälle des Tages waren unten. */
+  /* Wie tief steht der unterste Text - als ANTEIL der Folienhöhe.
+     1.0 heisst: genau auf der Unterkante. Grösser heisst: hängt heraus.
+
+     HIER STAND EINE offsetTop-KETTE UND SIE HAT GELOGEN.
+     Am 07.09.2026 in WebKit gemessen: Auf der Folie «Track Record»
+     meldete sie 1059 von 1080 - "passt" - während auf dem Schirm die
+     letzte Zeile sichtbar abgeschnitten war. Der Grund: `offsetTop`
+     und `offsetHeight` sind LAYOUT-Werte. Die Bühne steht aber unter
+     `zoom`, und wie ein Browser Layout-Werte unter `zoom` zurückgibt,
+     ist von Browser zu Browser verschieden. Chrome und WebKit
+     antworten unterschiedlich, also urteilte dieselbe Prüfung auf zwei
+     Geräten verschieden.
+
+     `getBoundingClientRect` liefert dagegen überall dasselbe: den
+     Kasten, wie er auf dem Schirm steht. Als Anteil der Folienhöhe
+     gerechnet, kürzt sich jede Skalierung heraus - egal ob die Bühne
+     gezoomt, die Folie geschrumpft oder der Browser vergrössert ist.
+
+     VERBOT: hier nie wieder mit offsetTop/offsetHeight messen. */
   function tiefsterText(s) {
+    var fr = s.getBoundingClientRect();
+    if (!fr.height) return 0;
     var tief = 0;
     var alle = s.querySelectorAll('*');
     for (var k = 0; k < alle.length; k++) {
@@ -867,10 +888,10 @@
         if (n.childNodes[c].nodeType === 3 && n.childNodes[c].textContent.trim()) { hatText = true; break; }
       }
       if (!hatText) continue;
-      var y = 0, e = n;
-      while (e && e !== s) { y += e.offsetTop; e = e.offsetParent; }
-      var u = y + n.offsetHeight;
-      if (u > tief) tief = u;
+      var r = n.getBoundingClientRect();
+      if (!r.width && !r.height) continue;
+      var anteil = (r.bottom - fr.top) / fr.height;
+      if (anteil > tief) tief = anteil;
     }
     return tief;
   }
@@ -892,6 +913,11 @@
   var BLOCKARTIG = { block: 1, flex: 1, grid: 1, 'list-item': 1, 'inline-block': 1, table: 1, 'table-row': 1, 'table-cell': 1 };
 
   function ueberlappt(s) {
+    /* Die Toleranz ist in Bühnen-Pixeln gedacht. Auf dem Schirm ist
+       die Bühne kleiner, also muss sie mitschrumpfen - sonst wäre sie
+       auf einem Telefon dreimal so grosszügig wie auf einem Beamer. */
+    var massstab = s.getBoundingClientRect().height / 1080 || 1;
+    var TOL = 4 * massstab;
     var kaesten = [];
     var alle = s.querySelectorAll('*');
     for (var k = 0; k < alle.length; k++) {
@@ -905,28 +931,55 @@
         if (n.childNodes[c].nodeType === 3 && n.childNodes[c].textContent.trim()) { hatText = true; break; }
       }
       if (!hatText) continue;
-      var x = 0, y = 0, e = n;
-      while (e && e !== s) { x += e.offsetLeft; y += e.offsetTop; e = e.offsetParent; }
-      kaesten.push({ n: n, l: x, r: x + n.offsetWidth, o: y, u: y + n.offsetHeight });
+      /* Auch hier in Bildschirm-Koordinaten, aus demselben Grund wie
+         bei `tiefsterText`. */
+      var r = n.getBoundingClientRect();
+      if (!r.width && !r.height) continue;
+      kaesten.push({ n: n, l: r.left, r: r.right, o: r.top, u: r.bottom });
     }
     for (var a = 0; a < kaesten.length; a++) {
       for (var b = a + 1; b < kaesten.length; b++) {
         var A = kaesten[a], B = kaesten[b];
         if (A.n.contains(B.n) || B.n.contains(A.n)) continue;
         /* 4px Toleranz je Achse: Zeilenabstände dürfen sich berühren. */
-        var yUeber = A.o < B.u - 4 && B.o < A.u - 4;
-        var xUeber = A.l < B.r - 4 && B.l < A.r - 4;
+        var yUeber = A.o < B.u - TOL && B.o < A.u - TOL;
+        var xUeber = A.l < B.r - TOL && B.l < A.r - TOL;
         if (yUeber && xUeber) return true;
       }
     }
     return false;
   }
 
+  /* Bis wohin darf Text reichen? Bis an die Innenkante des Satzspiegels,
+     nicht bis an die Kante der Bühne.
+
+     WARUM DER UNTERSCHIED ZÄHLT: Am 07.09.2026 in WebKit gemessen -
+     auf der Folie «Track Record» stand der tiefste Text bei 1.003, die
+     Prüfung erlaubte 1.005, also griff sie nicht. Auf dem Schirm klebte
+     die letzte Zeile «begleiten.» auf der Schnittkante der Bühne und
+     wurde angeschnitten. Formal drin, sichtbar kaputt.
+
+     Die Grenze ist die Kante der Bühne, nicht die Innenkante des
+     Satzspiegels. Gegen den Satzspiegel geprüft (am 07.09.2026
+     versucht) schrumpfte die Prüfung zehn Folien pro Format auf 0.76,
+     obwohl keine einzige etwas abschnitt: Der Kasten einer Textzeile
+     reicht durch den Durchschuss immer etwas tiefer als der Buchstabe,
+     den man sieht. Die Verkleinerung ist ein Notnagel gegen
+     Abgeschnittenes - kein Gestaltungswerkzeug. Wie voll eine Folie
+     aussehen darf, entscheidet der Mensch beim Bauen.
+
+     Die 0.001 sind ein halber Bühnenpixel Rundung, mehr nicht. Bei der
+     Folie «Track Record» lag der Wert bei 1.003 - drei Pixel über der
+     Kante, und genau dort wurde die Unterlänge des «g» von «begleiten»
+     angeschnitten. Diese drei Pixel sollen greifen. */
   function passt(s) {
-    return tiefsterText(s) <= s.clientHeight + 2 && !ueberlappt(s);
+    return tiefsterText(s) <= 1.001 && !ueberlappt(s);
   }
 
   function nachmessen() {
+    /* Reveals für die Messung an ihren Endplatz stellen - siehe
+       `.stage.misst` in deck.css. */
+    stage.classList.add('misst');
     slides.forEach(function (s) {
       /* Immer erst zurücksetzen: Wird das Fenster grösser, soll eine
          Folie ihre Verkleinerung auch wieder loswerden. */
@@ -942,6 +995,7 @@
         console.warn('Folie passt auch bei 0.72 nicht: ' + (s.dataset.title || '?'));
       }
     });
+    stage.classList.remove('misst');
   }
 
   fit();
