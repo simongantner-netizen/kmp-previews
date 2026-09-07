@@ -12,14 +12,14 @@
 <link rel="preload" href="../assets/fonts/Calibre-Regular.otf"  as="font" type="font/otf" crossorigin>
 <link rel="preload" href="../assets/fonts/Calibre-Black.otf"    as="font" type="font/otf" crossorigin>
 <!-- Vor dem Stylesheet, mit Absicht: Die Schriften stehen am Ende einer
-     @import-Kette (styles.css?v=202609071737 → tokens/fonts.css) und werden sonst erst
+     @import-Kette (styles.css?v=202609071802 → tokens/fonts.css) und werden sonst erst
      entdeckt, wenn das ganze CSS geladen und geparst ist. Der
      Preload-Scanner des Browsers findet diese Zeilen dagegen sofort,
      noch bevor er den <head> fertig gelesen hat.
      `crossorigin` ist Pflicht, auch bei gleicher Herkunft - Schriften
      werden immer im CORS-Modus geholt, und ohne das Attribut lädt der
      Browser sie ein zweites Mal. -->
-<link rel="stylesheet" href="../styles.css?v=202609071737">
+<link rel="stylesheet" href="../styles.css?v=202609071802">
 </head>
 <body>
 <div class="viewport">
@@ -1027,6 +1027,51 @@
     </section>
 
     <!-- ============================================================
+         REFERENZ · IB Langenthal (Kampagnons)
+         Die letzte Kampagnons-Referenz vor der webtie-Strecke. Am
+         07.09.2026 dazugekommen, auf Simons Ansage.
+
+         Belegt in MOCO (Kunde K0005, Projekte P25007 und P25012):
+         «Workshop Strategie & Storyline» 2025 und die zweite Runde
+         im Januar 2026, geführt von Daniel. Daher die Chips
+         «Kampagnons» und «2025-2026» - die Jahreszahl ist nicht
+         geschätzt, sie steht in den Projektdaten.
+
+         Warum diese Referenz hier trägt: IBL verkauft nichts, was
+         man sich aussuchen kann. Sie versorgen eine Stadt und müssen
+         trotzdem erklären, warum es sie gibt - dieselbe Aufgabe, die
+         Naturspur hat. Nicht sagen, nur zeigen.
+
+         Das Bild sind die echten Druckdaten der F12-Plakate, zwei
+         Motive gestapelt auf Papierton. Kein Mockup: Es sind
+         Plakate, keine Strasse - `bild-halb` trägt sie trotzdem,
+         weil randabfallend zwei Plakate stehen und in einer Kachel
+         nur ein Bild von zwei Plakaten läge.
+
+         Die beiden Abgebildeten sind namentlich genannte
+         Mitarbeitende (Daniel Spring, Jvan Emmenegger). Die Motive
+         hingen öffentlich - die Abbildung ist damit gedeckt. Wer
+         das Bild je ausserhalb dieser Kampagne verwendet, klärt neu.
+
+         VERBOT: keine Reichweiten, keine Wirkungszahlen. Wir haben
+         keine, und geliehene Zahlen fliegen beim ersten Nachfragen auf.
+         ============================================================ -->
+    <section class="slide t-ref bild-halb" data-title="Referenz IB Langenthal">
+      <div class="eyebrow" data-r="1">05 – Für wen wir arbeiten</div>
+      <div class="ref">
+        <div class="ref-body">
+          <h1 data-r="2" data-rise>IB Langenthal</h1>
+          <div class="ref-tags" data-r="3"><span>Kampagnons</span><span>2025–2026</span><span>Kommunikationsstrategie</span><span>Content</span><span>Projektleitung</span></div>
+          <p data-r="4">IBL versorgt Langenthal rund um die Uhr mit Strom und Wasser. Arbeit, die niemand bemerkt, solange sie funktioniert.</p>
+          <p data-r="5">Für die Kampagne zur Grundversorgung haben wir die Menschen gezeigt, die dahinterstehen: auf Plakaten, im Kundenmagazin, in Videos und Reels, und an Anlässen für die Bevölkerung.</p>
+        </div>
+        <div class="ref-fig" data-r="3">
+          <img src="../assets/works/ibl-plakate.jpg" alt="Zwei F12-Plakate der IBL-Kampagne: «Niemand sitzt gern im Dunkeln» mit Netzmonteur Daniel Spring und «Damit unser Wasser fliesst» mit Wasserwart Jvan Emmenegger.">
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
          REFERENZ · Reliag (webtie)
          Der Text beschreibt nur, was auf ihrer eigenen Seite steht:
          Gewerbeflächen, Kanton Aargau. Alles Weitere wäre erfunden.
@@ -1308,6 +1353,6 @@
      sechs Sekunden aus und war auf einem Telefon 4px gross - gesehen
      hat ihn dort niemand. Die Leiste trägt es jetzt allein. -->
 
-<script src="../deck/deck.js?v=202609071737"></script>
+<script src="../deck/deck.js?v=202609071802"></script>
 </body>
 </html>

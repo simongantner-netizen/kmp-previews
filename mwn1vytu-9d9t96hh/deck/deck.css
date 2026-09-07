@@ -759,7 +759,7 @@ body { background: var(--ink); }
 .offer-grid.cols-4 .offer-card h3 { font-size: 27px; }
 .offer-grid.cols-4 .offer-card .price { font-size: 40px; }
 .offer-grid.cols-4 .offer-card .price small { font-size: 15px; }
-.offer-grid.cols-4 .offer-card li { font-size: 16px; padding-left: 22px; }
+.offer-grid.cols-4 .offer-card li { font-size: 16px; padding-left: 30px; }
 .offer-card {
   border: var(--border-ink); border-radius: var(--radius-sm);
   padding: 40px 36px 44px; display: flex; flex-direction: column; gap: 20px;
@@ -777,7 +777,14 @@ body { background: var(--ink); }
 }
 .offer-card .price small { font-size: 18px; font-weight: 500; opacity: 0.55; letter-spacing: 0; }
 .offer-card ul { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
-.offer-card li { font-size: var(--fs-small); line-height: 1.35; padding-left: 26px; position: relative; opacity: 0.85; }
+/* `padding-left` muss den Pfeil UND den Abstand danach tragen - er
+   sitzt absolut auf `left: 0` und schiebt den Text nicht selbst weg.
+   Am 07.09.2026 nachgemessen: Bei 28px Schrift ist das Pfeilglyph
+   rund 28px breit, die 26px davor waren also zu wenig - Pfeil und
+   Wort berührten sich. 40px lassen dem Pfeil seinen Platz und dem
+   Auge ein Leerzeichen. Wer die Schriftgrösse ändert, rechnet hier
+   nach. */
+.offer-card li { font-size: var(--fs-small); line-height: 1.35; padding-left: 40px; position: relative; opacity: 0.85; }
 .offer-card li::before { content: "→"; position: absolute; left: 0; opacity: 0.5; }
 .offer-card.is-featured { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 .offer-card.is-featured .tier, .offer-card.is-featured li { opacity: 0.75; }
