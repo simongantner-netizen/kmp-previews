@@ -2,9 +2,9 @@
 <html lang="de-CH">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow,noarchive">
 <meta name="referrer" content="no-referrer">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kampagnons für Naturspur – zur Offerte, 8. September 2026</title>
 <link rel="preload" href="../assets/fonts/Calibre-Medium.otf"   as="font" type="font/otf" crossorigin>
 <link rel="preload" href="../assets/fonts/Calibre-Bold.otf"     as="font" type="font/otf" crossorigin>
@@ -12,14 +12,14 @@
 <link rel="preload" href="../assets/fonts/Calibre-Regular.otf"  as="font" type="font/otf" crossorigin>
 <link rel="preload" href="../assets/fonts/Calibre-Black.otf"    as="font" type="font/otf" crossorigin>
 <!-- Vor dem Stylesheet, mit Absicht: Die Schriften stehen am Ende einer
-     @import-Kette (styles.css → tokens/fonts.css) und werden sonst erst
+     @import-Kette (styles.css?v=202609070805 → tokens/fonts.css) und werden sonst erst
      entdeckt, wenn das ganze CSS geladen und geparst ist. Der
      Preload-Scanner des Browsers findet diese Zeilen dagegen sofort,
      noch bevor er den <head> fertig gelesen hat.
      `crossorigin` ist Pflicht, auch bei gleicher Herkunft - Schriften
      werden immer im CORS-Modus geholt, und ohne das Attribut lädt der
      Browser sie ein zweites Mal. -->
-<link rel="stylesheet" href="../styles.css?v=202609061657">
+<link rel="stylesheet" href="../styles.css?v=202609070805">
 </head>
 <body>
 <div class="viewport">
@@ -308,6 +308,48 @@
           <p>Unser Partner für Websites. Er übernimmt Technik, Umsetzung und Betrieb. Für euch bleibt es trotzdem eine Ansprechperson.</p>
         </div>
       </div>
+    </section>
+
+    <!-- ============================================================
+         t-duo – Kampagnons + webtie
+         Direkt hinter den Gesichtern: erst WER am Tisch sitzt, dann
+         WIE die beiden Häuser zusammen liefern.
+
+         Im Kurzdeck wichtiger als im Gesprächsdeck: Petra und
+         Christian lesen das ohne jemanden daneben, der erklärt, warum
+         plötzlich ein dritter Name auftaucht. Die Folie beantwortet
+         das, bevor die Frage entsteht.
+
+         Beide Seiten brauchen gleich viele Zeilen, sonst sitzen die
+         Marken-Label auf verschiedenen Höhen und der Block kippt.
+         Die Fusszeile ist Pflicht: ohne sie zeigt die Folie unsere
+         Arbeitsteilung statt ihren Nutzen.
+         ============================================================ -->
+    <section class="slide ink t-duo" data-title="Kampagnons + webtie">
+      <div class="eyebrow" data-r="1">02 – Wer am Tisch sitzt</div>
+      <h1 data-r="2" data-rise style="margin-bottom:64px;">Kampagnons + webtie = eure Kombination für einen starken Webauftritt.</h1>
+      <div class="duo">
+        <div class="duo-seite" data-r="3">
+          <span class="lab">Kampagnons</span>
+          <ul>
+            <li>Brand</li>
+            <li>Konzeption</li>
+            <li>Design</li>
+            <li>Content</li>
+          </ul>
+        </div>
+        <div class="duo-mal" data-r="5">+</div>
+        <div class="duo-seite" data-r="4">
+          <span class="lab">webtie</span>
+          <ul>
+            <li>Technik</li>
+            <li>Code</li>
+            <li>Security</li>
+            <li>Hosting</li>
+          </ul>
+        </div>
+      </div>
+      <p class="duo-fuss" data-r="6">Für euch heisst das: <span class="hl">ein Ansprechpartner</span>, keine Übersetzungen zwischen Agentur und Programmierer. Alles aus einer Hand.</p>
     </section>
 
 
@@ -1209,6 +1251,6 @@
      sechs Sekunden aus und war auf einem Telefon 4px gross - gesehen
      hat ihn dort niemand. Die Leiste trägt es jetzt allein. -->
 
-<script src="../deck/deck.js?v=202609061657"></script>
+<script src="../deck/deck.js?v=202609070805"></script>
 </body>
 </html>

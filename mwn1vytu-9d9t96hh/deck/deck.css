@@ -1559,6 +1559,60 @@ body { background: var(--ink); }
 .work-cap .fmt { font-family: var(--font-mono); font-weight: 500; font-size: 15px; opacity: 0.45; }
 .slide.ink .work-fig { background: rgba(240,240,240,0.09); }
 
+/* ---- t-duo · Zwei Häuser, ein Ergebnis -------------------------
+   Für Konstellationen, in denen zwei Betriebe zusammen liefern -
+   bei Websites Kampagnons und webtie.
+
+   Das Rechenzeichen in der Mitte ist die Aussage, nicht die Deko:
+   gross, in Lime, und im Reveal ZULETZT - erst die zwei Seiten, dann
+   die Verbindung. Welches Zeichen, entscheidet die Headline: steht
+   dort ein Plus, steht hier ein Plus. Zwei verschiedene Rechenzeichen
+   auf einer Folie sind ein Fehler, den jeder sieht und niemand
+   benennen kann.
+
+   Verbot: nie mehr als zwei Seiten. Drei Partner sind kein Duo,
+   sondern eine Kette, und dafür gibt es t-steps. Und nie ohne die
+   Fusszeile: ohne sie zeigt die Folie eine Aufgabenteilung statt
+   eines Angebots - der Kunde will wissen, was ER davon hat, nicht
+   wie wir uns die Arbeit aufteilen. */
+/* Die beiden Seiten lehnen sich ins Zeichen hinein und der Block
+   steht zentriert. Das trägt nur, weil beide Seiten gleich viele
+   Zeilen haben: dann sitzen die Marken-Label auf derselben Höhe und
+   der Block liest sich als eine Waage. Bei ungleichen Listen kippt
+   er, und dann ist linksbündig die bessere Wahl.
+   `align-items: start` statt `center` - sonst rutschen die Label
+   auseinander, sobald eine Seite eine Zeile mehr hat. */
+.duo {
+  display: grid; grid-template-columns: 1fr auto 1fr;
+  gap: 80px; flex: 1; align-items: start; align-content: center;
+  width: 100%;
+}
+.duo-seite:first-child { text-align: right; }
+.duo-seite .lab {
+  font-family: var(--font-mono); font-weight: 500; font-size: 20px;
+  letter-spacing: var(--tracking-eyebrow); text-transform: uppercase;
+  opacity: 0.5; display: block; margin-bottom: 34px;
+}
+.duo-seite ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 22px; }
+.duo-seite li { font-size: 50px; line-height: 1.12; font-weight: 600; }
+
+/* Das Zeichen trägt die Aussage, also darf es gross sein. Die
+   Schriftgrösse täuscht: das Zeichen einer Textschrift füllt nur
+   einen Bruchteil seiner Kegelhöhe. Es sitzt auf der Höhe der
+   ersten Zeile, nicht in der Mitte des Blocks - sonst hängt es
+   unter den Marken-Labeln in der Luft. */
+.duo-mal {
+  font-size: 200px; font-weight: 200; line-height: 0.7;
+  color: var(--lime); user-select: none;
+  margin-top: 44px; align-self: center;
+}
+.slide:not(.ink) .duo-mal { color: var(--ink); opacity: 0.25; }
+
+.duo-fuss {
+  margin-top: 64px; padding-top: 34px; border-top: var(--border-rule);
+  font-size: 32px; line-height: 1.35;
+}
+
 /* ---- t-gantt · Terminplan -------------------------------------
    Wochen ab Auftragserteilung statt Kalenderdaten - sonst verfällt
    die Offerte, sobald der Entscheid zwei Wochen später fällt.
