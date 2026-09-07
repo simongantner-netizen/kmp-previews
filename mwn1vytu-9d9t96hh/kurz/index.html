@@ -12,14 +12,14 @@
 <link rel="preload" href="../assets/fonts/Calibre-Regular.otf"  as="font" type="font/otf" crossorigin>
 <link rel="preload" href="../assets/fonts/Calibre-Black.otf"    as="font" type="font/otf" crossorigin>
 <!-- Vor dem Stylesheet, mit Absicht: Die Schriften stehen am Ende einer
-     @import-Kette (styles.css?v=202609071914 → tokens/fonts.css) und werden sonst erst
+     @import-Kette (styles.css?v=202609072021 → tokens/fonts.css) und werden sonst erst
      entdeckt, wenn das ganze CSS geladen und geparst ist. Der
      Preload-Scanner des Browsers findet diese Zeilen dagegen sofort,
      noch bevor er den <head> fertig gelesen hat.
      `crossorigin` ist Pflicht, auch bei gleicher Herkunft - Schriften
      werden immer im CORS-Modus geholt, und ohne das Attribut lädt der
      Browser sie ein zweites Mal. -->
-<link rel="stylesheet" href="../styles.css?v=202609071914">
+<link rel="stylesheet" href="../styles.css?v=202609072021">
 </head>
 <body>
 <div class="viewport">
@@ -1165,10 +1165,17 @@
          ⚠️ Die Zahlen müssen mit der Offerte A260005 übereinstimmen.
          Wer eine ändert, ändert beide. Zwei Wahrheiten über den Preis
          sind schlimmer als gar keine.
-         Stand 07.09.2026: 7’200 / 9’000 / 1’800 = 18’000, minus 10 %
-         Rabatt = 16’200. Intern sind das 100 kalkulierte Stunden zu
-         180, davon 90 verrechnet - diese Rechnung fällt NIE, weder
-         auf der Folie noch im Gespräch.
+         Stand 07.09.2026, zweite Runde: 7’200 / 9’360 / 1’440 =
+         18’000, minus 10 % Rabatt = 16’200. Intern sind das 100
+         kalkulierte Stunden zu 180, davon 90 verrechnet - diese
+         Rechnung fällt NIE, weder auf der Folie noch im Gespräch.
+
+         ⚠️ Die Endsumme allein ist KEIN Beleg. Am 07.09.2026 blieben
+         die 18’000 gleich, während in der Offerte «Konzept und
+         Struktur» wegfiel und die Beträge zwischen Website und
+         Projektleitung wanderten - die Folie stimmte in der Summe
+         und log in zwei von drei Karten. Wer abgleicht, rechnet die
+         Blöcke einzeln nach.
 
          Der Störer ist am 07.09.2026 von dieser Folie verschwunden.
          Zwei Gründe: Mit drei Karten füllt das Grid die ganze Bühne,
@@ -1217,23 +1224,23 @@
         <div class="offer-card" data-r="4">
           <span class="tier">Block 2</span>
           <h3>Website</h3>
-          <div class="price">9’000<small> CHF</small></div>
+          <div class="price">9’360<small> CHF</small></div>
           <ul>
-            <li>Konzept und Struktur</li>
             <li>Design für Desktop und Handy</li>
-            <li>Umsetzung und Craft CMS</li>
-            <li>Inhalt, Feinschliff und Go-live</li>
+            <li>Umsetzung und CMS</li>
+            <li>Inhalt und Feinschliff</li>
+            <li>Qualitätscheck und Go-live</li>
           </ul>
         </div>
         <div class="offer-card" data-r="5">
           <span class="tier">Block 3</span>
           <h3>Projektleitung</h3>
-          <div class="price">1’800<small> CHF</small></div>
+          <div class="price">1’440<small> CHF</small></div>
           <ul>
             <li>Ein Ansprechpartner, auch fürs Technische</li>
             <li>Termine vorbereiten und führen</li>
             <li>Koordination mit webtie</li>
-            <li>Go-live vor Weihnachten</li>
+            <li>Go-live noch 2026</li>
           </ul>
         </div>
       </div>
@@ -1332,6 +1339,6 @@
      sechs Sekunden aus und war auf einem Telefon 4px gross - gesehen
      hat ihn dort niemand. Die Leiste trägt es jetzt allein. -->
 
-<script src="../deck/deck.js?v=202609071914"></script>
+<script src="../deck/deck.js?v=202609072021"></script>
 </body>
 </html>
